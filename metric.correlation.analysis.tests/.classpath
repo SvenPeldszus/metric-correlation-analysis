@@ -12,8 +12,5 @@
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="D:/Projekte/tools/eclipse/plugins/org.eclipse.jgit_5.9.0.202009080501-r.jar"/>
-	<classpathentry kind="lib" path="D:/Projekte/tools/eclipse/plugins/org.eclipse.jgit.gpg.bc_5.9.0.202009080501-r.jar"/>
-	<classpathentry kind="lib" path="D:/Projekte/tools/eclipse/plugins/org.eclipse.jgit.ssh.apache_5.9.0.202009080501-r.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

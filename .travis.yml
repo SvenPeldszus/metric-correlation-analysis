@@ -1,6 +1,6 @@
 language: java
 dist: bionic
-sudo: false
+services: mongodb
 cache:
   directories:
   - $HOME/.m2

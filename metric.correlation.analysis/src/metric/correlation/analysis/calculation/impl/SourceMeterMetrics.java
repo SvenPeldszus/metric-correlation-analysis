@@ -38,7 +38,7 @@ import metric.correlation.analysis.database.MongoDBHelper;
 
 public class SourceMeterMetrics implements IMetricClassCalculator {
 
-	private static final String ENV_VARIABLE_NAME = "SOURCE_METER_JAVA"; //$NON-NLS-1$
+	public static final String ENV_VARIABLE_NAME = "SOURCE_METER_JAVA"; //$NON-NLS-1$
 
 	private static final Logger LOGGER = Logger.getLogger(SourceMeterMetrics.class);
 

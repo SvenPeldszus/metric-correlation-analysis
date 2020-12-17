@@ -37,6 +37,8 @@ import org.eclipse.jgit.api.ResetCommand.ResetType;
 import org.gravity.eclipse.importer.ImportException;
 import org.gravity.eclipse.importer.NoRootFolderException;
 import org.gravity.eclipse.importer.ProjectImport;
+import org.gravity.eclipse.importer.gradle.GradleImport;
+import org.gravity.eclipse.importer.maven.MavenImport;
 //import org.gravity.eclipse.importer.gradle.GradleImport;
 import org.gravity.eclipse.io.FileUtils;
 import org.gravity.eclipse.io.GitCloneException;
@@ -45,8 +47,6 @@ import org.gravity.eclipse.os.UnsupportedOperationSystemException;
 
 import com.google.common.io.Files;
 
-import gradle.GradleImport;
-import gradle.MavenImport;
 import metric.correlation.analysis.calculation.IMetricCalculator;
 import metric.correlation.analysis.calculation.impl.IssueMetrics;
 import metric.correlation.analysis.calculation.impl.SourceMeterMetrics;

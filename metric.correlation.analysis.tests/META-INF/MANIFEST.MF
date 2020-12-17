@@ -1,15 +1,17 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Tests
-Bundle-SymbolicName: metric.correlation.analysis.tests
+Bundle-Name: Metric Correlation Analysis Tests
+Bundle-SymbolicName: metric.correlation.analysis.tests;singleton:=true
 Bundle-Version: 0.0.1.qualifier
-Require-Bundle: metric.correlation.analysis;bundle-version="0.0.1",
+Require-Bundle: metric.correlation.analysis,
  org.junit,
- org.eclipse.core.runtime;bundle-version="3.17.100",
- org.eclipse.core.resources;bundle-version="3.13.700",
- org.gravity.eclipse;bundle-version="1.0.0"
+ org.eclipse.core.resources,
+ org.gravity.eclipse,
+ org.eclipse.jdt.core,
+ org.eclipse.jgit,
+ metric.correlation.analysis.dependencies
 Automatic-Module-Name: metric.correlation.analysis.tests
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Import-Package: org.bson,
- org.eclipse.core.runtime.jobs,
- org.eclipse.jdt.core
+Bundle-ClassPath: .
+Bundle-ActivationPolicy: lazy
+Bundle-Vendor: RGSE - University of Koblenz-Landau

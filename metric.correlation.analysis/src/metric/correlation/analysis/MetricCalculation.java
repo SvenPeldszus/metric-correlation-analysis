@@ -124,7 +124,8 @@ public class MetricCalculation {
 	 * @throws IOException If the results file cannot be initialized
 	 */
 	public MetricCalculation() throws IOException {
-
+		this.errors = new HashSet<>();
+		
 		// Get the time stamp of this run
 		this.timestamp = new SimpleDateFormat("yyyy-MM-dd_HH_mm").format(new Date());
 

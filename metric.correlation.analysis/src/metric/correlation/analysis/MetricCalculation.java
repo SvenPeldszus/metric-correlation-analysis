@@ -297,11 +297,12 @@ public class MetricCalculation {
 		return success;
 	}
 
-	public IJavaProject importProject(File src, boolean ignoreBuildErrors) {
+	public IJavaProject importProject(File src, boolean ignoreBuildErrors) throws ImportException {
 		LOGGER.log(Level.INFO, "Importing  project to Eclipse workspace");
 		if (!src.exists()) {
-			errors.add("src folder does not exist");
-			return null;
+			String message = "src folder does not exist";
+			errors.add(message);
+			throw new ImportException(message);
 		}
 		ProjectImport projectImport;
 		if (Arrays.stream(src.listFiles()).anyMatch(f -> f.getName().contentEquals("build.gradle"))) {
@@ -309,18 +310,19 @@ public class MetricCalculation {
 				projectImport = new GradleImport(src, ignoreBuildErrors);
 			} catch (IOException | ImportException e) {
 				errors.add("new GradleImport()");
-				return null;
+				throw new ImportException(e);
 			}
 		} else if (Arrays.stream(src.listFiles()).anyMatch(f -> f.getName().contentEquals("pom.xml"))) {
 			try {
 				projectImport = new MavenImport(src, ignoreBuildErrors);
 			} catch (ImportException e) {
 				errors.add("new MavenImport()");
-				return null;
+				throw new ImportException(e);
 			}
 		} else {
-			errors.add("not maven or gradle project");
-			return null;
+			String message = "not maven or gradle project";
+			errors.add(message);
+			throw new ImportException(message);
 		}
 
 		IJavaProject project;
@@ -330,12 +332,12 @@ public class MetricCalculation {
 		} catch (NoRootFolderException e) {
 			errors.add(projectImport.getClass().getSimpleName());
 			LOGGER.log(Level.ERROR, e.getMessage(), e);
-			return null;
+			throw new ImportException(e);
 		} catch (ImportException e) {
 			errors.add(projectImport.getClass().getSimpleName());
 			LOGGER.log(Level.ERROR, e.getMessage(), e);
 			Thread.currentThread().interrupt();
-			return null;
+			throw e;
 		}
 		return project;
 	}
@@ -393,7 +395,12 @@ public class MetricCalculation {
 	 */
 	private boolean calculateMetrics(String productName, String vendorName, String version, File src) {
 		// Import the sourcecode as maven or gradle project
-		IJavaProject project = importProject(src, true);
+		IJavaProject project;
+		try {
+			project = importProject(src, true);
+		} catch (ImportException e) {
+			return false;
+		}
 		if (project == null) {
 			return false;
 		}

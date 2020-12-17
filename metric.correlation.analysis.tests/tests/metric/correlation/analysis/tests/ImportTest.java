@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.eclipse.jdt.core.IJavaProject;
+import org.gravity.eclipse.importer.ImportException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -30,7 +31,7 @@ public class ImportTest {
 		}
 	}
 	@Test
-	public void testGradleImport() {
+	public void testGradleImport() throws ImportException {
 		File f = new File(GRADLE_PROJECT_PATH);
 		if (!f.exists()) {
 			fail("project does not exist at expected location");
@@ -40,7 +41,7 @@ public class ImportTest {
 	}
 	
 	@Test
-	public void testMavenImport() {
+	public void testMavenImport() throws ImportException {
 		File f = new File(GRADLE_PROJECT_PATH);
 		if (!f.exists()) {
 			fail("project does not exist at expected location");

@@ -130,7 +130,7 @@ public class MetricCalculation {
 
 		// Initialize the metric calculators
 		FileAppender initLogger = addLogAppender("initialization");
-		this.calculators = new TreeSet<IMetricCalculator>();
+		this.calculators = new TreeSet<>();
 		for (Class<? extends IMetricCalculator> clazz : METRIC_CALCULATORS) {
 			try {
 				calculators.add(clazz.getConstructor().newInstance());
@@ -142,7 +142,7 @@ public class MetricCalculation {
 
 		this.allMetricResults = new LinkedHashMap<>();
 		// Collect all metric keys
-		Set<String> metricKeys = new HashSet<String>();
+		Set<String> metricKeys = new HashSet<>();
 		for (IMetricCalculator calculator : calculators) {
 			metricKeys.addAll(calculator.getMetricKeys());
 		}

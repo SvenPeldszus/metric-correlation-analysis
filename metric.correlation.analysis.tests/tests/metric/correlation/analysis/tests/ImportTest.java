@@ -10,7 +10,6 @@ import java.io.InputStreamReader;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.gravity.eclipse.importer.ImportException;
-import org.junit.Before;
 import org.junit.Test;
 
 import metric.correlation.analysis.MetricCalculation;
@@ -21,32 +20,24 @@ import metric.correlation.analysis.MetricCalculation;
 public class ImportTest {
 	private static final String MAVEN_PROJECT_PATH = "resources/maven-simple";
 	private static final String GRADLE_PROJECT_PATH = "resources/gradle-simple";
-	private MetricCalculation metricCalculation;
-	@Before
-	public void init() {
-		try {
-			metricCalculation = new MetricCalculation();
-		} catch (IOException e) {
-			fail("could not create MetricCalculation");
-		}
-	}
+	
 	@Test
-	public void testGradleImport() throws ImportException {
+	public void testGradleImport() throws ImportException, IOException {
 		File f = new File(GRADLE_PROJECT_PATH);
 		if (!f.exists()) {
 			fail("project does not exist at expected location");
 		}
-		IJavaProject importProject = metricCalculation.importProject(new File(GRADLE_PROJECT_PATH), false);
+		IJavaProject importProject = new MetricCalculation().importProject(new File(GRADLE_PROJECT_PATH), false);
 		assertNotNull(importProject);
 	}
 	
 	@Test
-	public void testMavenImport() throws ImportException {
-		File f = new File(GRADLE_PROJECT_PATH);
+	public void testMavenImport() throws ImportException, IOException {
+		File f = new File(MAVEN_PROJECT_PATH);
 		if (!f.exists()) {
 			fail("project does not exist at expected location");
 		}
-		IJavaProject importProject = metricCalculation.importProject(new File(MAVEN_PROJECT_PATH), false);
+		IJavaProject importProject = new MetricCalculation().importProject(new File(MAVEN_PROJECT_PATH), false);
 		assertNotNull(importProject);
 	}
 	

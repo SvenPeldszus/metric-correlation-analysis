@@ -21,7 +21,7 @@ import org.gravity.eclipse.os.UnsupportedOperationSystemException;
  *
  */
 public class CommandExecuter {
-	
+
 	private CommandExecuter() {
 		// As the class only provides static methods the class shouldn't be instantiated
 	}
@@ -32,9 +32,10 @@ public class CommandExecuter {
 	 * Currently only Windows and Linux are supported!
 	 * 
 	 * @param location The location
-	 * @param command The command
+	 * @param command  The command
 	 * @return true, iff the command has been executed successfully
-	 * @throws UnsupportedOperationSystemException If the operation system is not supported
+	 * @throws UnsupportedOperationSystemException If the operation system is not
+	 *                                             supported
 	 */
 	public static boolean executeCommand(File location, String command) throws UnsupportedOperationSystemException {
 		Runtime run = Runtime.getRuntime();
@@ -67,10 +68,10 @@ public class CommandExecuter {
 	}
 
 	/**
-	 * Loggs a stream with the given level
+	 * Logs a stream with the given level
 	 * 
 	 * @param stream The stream
-	 * @param level The level
+	 * @param level  The level
 	 */
 	private static void printStream(final InputStream stream, final Level level) {
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {

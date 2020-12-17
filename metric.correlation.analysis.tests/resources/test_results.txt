@@ -1,0 +1,8 @@
+LOCpC,CBO,product,vendor,LLOC,LDC,WMC,version,DIT,LCOM5
+49.47,1.74,Android-Debug-Database,amitshekhariitbhu,2325.00,12.81,10.26,v1.0.6,0.11,1.4
+62.35,4.15,SimianArmy,Netflix,12907.00,10.19,12.92,v2.5.3,0.91,1.16
+60.3,4.02,JsBridge,lzyzsd,13386.00,9.5,12.54,1.0.4,0.88,1.18
+48.27,4.17,halo,halo-dev,30118.00,9.65,8.7,v1.3.2,0.82,1.01
+48.9,3.95,xxl-job,xuxueli,37993.00,10.08,9.51,v2.2.0,0.71,1.05
+48.67,3.91,Toasty,GrenderG,38397.00,9.99,9.46,1.4.2,0.7,1.05
+49.58,3.38,vjtools,vipshop,50229.00,9.75,10.38,v.1.0.8,0.56,1.39

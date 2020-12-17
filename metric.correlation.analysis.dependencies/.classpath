@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="lib/activation.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry exported="true" kind="lib" path="lib/aggs-matrix-stats-client.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/animal-sniffer-annotations.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/btf.jar"/>
@@ -20,7 +21,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/error_prone_annotations.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/gson.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/guava.jar" sourcepath="/home/speldszus/.m2/repository/com/google/guava/guava/26.0-jre/guava-26.0-jre-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/guava.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/HdrHistogram.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hppc.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/httpasyncclient.jar"/>
@@ -45,7 +46,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/jna.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/joda-time.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jopt-simple.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/json-schema-core.jar" sourcepath="/home/speldszus/.m2/repository/com/github/fge/json-schema-core/1.2.5/json-schema-core-1.2.5-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/json-schema-core.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/json-schema-validator.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jsr305.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lang-mustache-client.jar"/>
@@ -79,6 +80,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/netty-handler.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/netty-resolver.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/netty-transport.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opennlp-tools.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/parent-join-client.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/percolator-client.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/rank-eval-client.jar"/>
@@ -90,8 +92,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/transport-netty4-client.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/transport.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/uri-template.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="src" path="src/"/>
+	<classpathentry exported="true" kind="lib" path="lib/activation.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

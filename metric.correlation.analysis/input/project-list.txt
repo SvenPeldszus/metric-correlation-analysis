@@ -1,0 +1,389 @@
+{
+  "projects": [
+      {
+      "productName": "orientdb",
+      "vendorName": "orientechnologies",
+      "url": "http://www.github.com/orientechnologies/orientdb.git",
+      "commits": [
+        {
+          "commitId": "8b6ef394ce7b45017e84a65efb9ce7534c56aa8e",
+          "version": "3.1.2"
+        }
+      ]
+    },
+      {
+      "productName": "skywalking",
+      "vendorName": "apache",
+      "url": "http://www.github.com/apache/skywalking.git",
+      "commits": [
+        {
+          "commitId": "bcc27eb6cf9e9a5b01fbbd0a9899692185d3053d",
+          "version": "v8.1.0"
+        }
+      ]
+    },
+  {
+      "productName": "OpenRefine",
+      "vendorName": "OpenRefine",
+      "url": "http://www.github.com/OpenRefine/OpenRefine.git",
+      "commits": [
+        {
+          "commitId": "437dc4d74110ce006b9f829fe05f461cc8ed1170",
+          "version": "3.4.1"
+        }
+      ]
+    },
+  {
+      "productName": "jib",
+      "vendorName": "GoogleContainerTools",
+      "url": "http://www.github.com/GoogleContainerTools/jib.git",
+      "commits": [
+        {
+          "commitId": "838b447760ac4fb2cc8e7b8ba54ee8fdfbee9c53",
+          "version": "v2.4.0-maven"
+        }
+      ]
+    },
+  {
+      "productName": "antlr4",
+      "vendorName": "antlr",
+      "url": "http://www.github.com/antlr/antlr4.git",
+      "commits": [
+        {
+          "commitId": "7a3f40bc341ddfb463d6e0aa1a6265064d020cb6",
+          "version": "4.8"
+        }
+      ]
+    },
+  {
+      "productName": "material",
+      "vendorName": "rey5137",
+      "url": "http://www.github.com/rey5137/material.git",
+      "commits": [
+        {
+          "commitId": "8217833df4bbe18ff5c9cf9454f95038c9ecde44",
+          "version": "v1.1.1"
+        }
+      ]
+    },
+  {
+      "productName": "swagger-core",
+      "vendorName": "swagger-api",
+      "url": "http://www.github.com/swagger-api/swagger-core.git",
+      "commits": [
+        {
+          "commitId": "a78875c8e24db082105d3dc3b34cb40d6513d471",
+          "version": "v2.1.2"
+        }
+      ]
+    },
+   {
+      "productName": "dropwizard",
+      "vendorName": "dropwizard",
+      "url": "http://www.github.com/dropwizard/dropwizard.git",
+      "commits": [
+        {
+          "commitId": "8b9d7f887fd37ec22cb39f020d710fb7835d159a",
+          "version": "v2.0.12"
+        }
+      ]
+    },
+  {
+      "productName": "zxing-android-embedded",
+      "vendorName": "journeyapps",
+      "url": "http://www.github.com/journeyapps/zxing-android-embedded.git",
+      "commits": [
+        {
+          "commitId": "c555ffbe05cdc64cb1dd22cab968f6f6233b3797",
+          "version": "v4.1.0"
+        }
+      ]
+    },
+  {
+      "productName": "Calligraphy",
+      "vendorName": "chrisjenx",
+      "url": "http://www.github.com/chrisjenx/Calligraphy.git",
+      "commits": [
+        {
+          "commitId": "c1d3692bfd0884f8cacf083a8324849b15622011",
+          "version": "v2.1.0"
+        }
+      ]
+    },
+  {
+      "productName": "socket.io-client-java",
+      "vendorName": "socketio",
+      "url": "http://www.github.com/socketio/socket.io-client-java.git",
+      "commits": [
+        {
+          "commitId": "fcee9964188de49752923816114a3f9ed990c429",
+          "version": "socket.io-client-0.8.3"
+        }
+      ]
+    },
+  {
+      "productName": "AndroidPdfViewer",
+      "vendorName": "barteksc",
+      "url": "http://www.github.com/barteksc/AndroidPdfViewer.git",
+      "commits": [
+        {
+          "commitId": "69f73986c0a4604b90a25a646cf0bd8c31e74069",
+          "version": "2.7.0"
+        }
+      ]
+    },
+  {
+      "productName": "AndroidSlidingUpPanel",
+      "vendorName": "umano",
+      "url": "http://www.github.com/umano/AndroidSlidingUpPanel.git",
+      "commits": [
+        {
+          "commitId": "c44f86b344962b5b5fe4446371157a26342504a2",
+          "version": "3.3.0"
+        }
+      ]
+    },
+   {
+      "productName": "ahbottomnavigation",
+      "vendorName": "aurelhubert",
+      "url": "http://www.github.com/aurelhubert/ahbottomnavigation.git",
+      "commits": [
+        {
+          "commitId": "9241f2a1d9f2321d9fcc1f98e2cdcbea5ddd0ba4",
+          "version": "v2.3.4"
+        }
+      ]
+    },
+  {
+      "productName": "jd-gui",
+      "vendorName": "java-decompiler",
+      "url": "http://www.github.com/java-decompiler/jd-gui.git",
+      "commits": [
+        {
+          "commitId": "b3c1ced04e571fc316648d114ff0c8121e051d8f",
+          "version": "v1.6.6"
+        }
+      ]
+    },
+  {
+      "productName": "haven",
+      "vendorName": "guardianproject",
+      "url": "http://www.github.com/guardianproject/haven.git",
+      "commits": [
+        {
+          "commitId": "89f595626e6dd0330d42fae710647b19e5786233",
+          "version": "0.0.20"
+        }
+      ]
+    },
+  {
+      "productName": "hugo",
+      "vendorName": "JakeWharton",
+      "url": "http://www.github.com/JakeWharton/hugo.git",
+      "commits": [
+        {
+          "commitId": "9f2685336119c7983ee7c4544df0e291bf61dd1d",
+          "version": "1.1.0"
+        }
+      ]
+    },
+    {
+      "productName": "jjwt",
+      "vendorName": "jwtk",
+      "url": "http://www.github.com/jwtk/jjwt.git",
+      "commits": [
+        {
+          "commitId": "c09deaa5f31fb7b3a8184daec4228269942c77a4",
+          "version": "0.11.1"
+        }
+      ]
+    },
+      {
+      "productName": "dropwizard",
+      "vendorName": "dropwizard",
+      "url": "http://www.github.com/dropwizard/dropwizard.git",
+      "commits": [
+        {
+          "commitId": "8b9d7f887fd37ec22cb39f020d710fb7835d159a",
+          "version": "v2.0.12"
+        }
+      ]
+    },
+    {
+      "productName": "android-gpuimage",
+      "vendorName": "cats-oss",
+      "url": "http://www.github.com/cats-oss/android-gpuimage.git",
+      "commits": [
+        {
+          "commitId": "2f01ae71cb5f92cf9028138e40a12ab6ed924549",
+          "version": "v2.0.4"
+        }
+      ]
+    },
+    {
+      "productName": "quasar",
+      "vendorName": "puniverse",
+      "url": "http://www.github.com/puniverse/quasar.git",
+      "commits": [
+        {
+          "commitId": "96460178e13c24fab71820b31e0ecb790c9a1087",
+          "version": "v0.8.0"
+        }
+      ]
+    },
+    {
+      "productName": "Toasty",
+      "vendorName": "GrenderG",
+      "url": "http://www.github.com/GrenderG/Toasty.git",
+      "commits": [
+        {
+          "commitId": "600b630b16a19bfb788e335eee6eded7e90187b0",
+          "version": "1.4.2"
+        }
+      ]
+    },
+    {
+      "productName": "greenDAO",
+      "vendorName": "greenrobot",
+      "url": "http://www.github.com/greenrobot/greenDAO.git",
+      "commits": [
+        {
+          "commitId": "0cce6c004181eeec9b900c9bd2ef47d7f0c23893",
+          "version": "V3.3.0"
+        }
+      ]
+    },
+    {
+      "productName": "AgentWeb",
+      "vendorName": "Justson",
+      "url": "http://www.github.com/Justson/AgentWeb.git",
+      "commits": [
+        {
+          "commitId": "3989dc0f8846e43402834d3a779de1b5bd028bd3",
+          "version": "v4.1.3"
+        }
+      ]
+    },
+    {
+      "productName": "epoxy",
+      "vendorName": "airbnb",
+      "url": "http://www.github.com/airbnb/epoxy.git",
+      "commits": [
+        {
+          "commitId": "b8daf0c36951818d377791a243db9c139ecc8b90",
+          "version": "3.11.0"
+        }
+      ]
+    },
+    {
+      "productName": "spark",
+      "vendorName": "perwendel",
+      "url": "http://www.github.com/perwendel/spark.git",
+      "commits": [
+        {
+          "commitId": "10146d7420169860391c659d31c21b85f9b715b9",
+          "version": "2.9.1"
+        }
+      ]
+    },
+    {
+      "productName": "mybatis-3",
+      "vendorName": "mybatis",
+      "url": "http://www.github.com/mybatis/mybatis-3.git",
+      "commits": [
+        {
+          "commitId": "e85eacb38dfbcdfe1778c8347135d8bb1b1b7d65",
+          "version": "mybatis-3.5.4"
+        }
+      ]
+    },
+    {
+      "productName": "junit4",
+      "vendorName": "junit-team",
+      "url": "http://www.github.com/junit-team/junit4.git",
+      "commits": [
+        {
+          "commitId": "038f7518fc1018b26df608e3e5dce6db4611be29",
+          "version": "r4.13"
+        }
+      ]
+    },
+    {
+      "productName": "RxPermissions",
+      "vendorName": "tbruyelle",
+      "url": "http://www.github.com/tbruyelle/RxPermissions.git",
+      "commits": [
+        {
+          "commitId": "405050e3f58b091148dec672c5603ec1165fbc97",
+          "version": "v0.12"
+        }
+      ]
+    },
+    {
+      "productName": "TapTargetView",
+      "vendorName": "KeepSafe",
+      "url": "http://www.github.com/KeepSafe/TapTargetView.git",
+      "commits": [
+        {
+          "commitId": "9cd686ac9dd21da480eec7e1afd568dc4f4be711",
+          "version": "1.13.0"
+        }
+      ]
+    },
+    {
+      "productName": "termux-app",
+      "vendorName": "termux",
+      "url": "http://www.github.com/termux/termux-app.git",
+      "commits": [
+        {
+          "commitId": "9b7c7102b2ad0f97381656a3e8a2c99c1859fba1",
+          "version": "v0.94"
+        }
+      ]
+    },
+    {
+      "productName": "wiremock",
+      "vendorName": "tomakehurst",
+      "url": "http://www.github.com/tomakehurst/wiremock.git",
+      "commits": [
+        {
+          "commitId": "2b5087207a8989f3fd989982573305d59f3c753d",
+          "version": "2.27.1"
+        }
+      ]
+    },
+    {
+      "productName": "Fragmentation",
+      "vendorName": "YoKeyword",
+      "url": "http://www.github.com/YoKeyword/Fragmentation.git",
+      "commits": [
+        {
+          "commitId": "1ff69d4d322761d81c9a9765c8d5a5087f9ed133",
+          "version": "1.3.7"
+        }
+      ]
+    },
+    {
+      "productName": "testcontainers-java",
+      "vendorName": "testcontainers",
+      "url": "http://www.github.com/testcontainers/testcontainers-java.git",
+      "commits": [
+        {
+          "commitId": "48534069037e17147208e65c3c7d3d03e3c83a47",
+          "version": "1.14.3"
+        }
+      ]
+    },
+    {
+      "productName": "Timber",
+      "vendorName": "naman14",
+      "url": "http://www.github.com/naman14/Timber.git",
+      "commits": [
+        {
+          "commitId": "0a5823ba6cef7e5c5915776cf10476ec2756ff90",
+          "version": "v1.6"
+        }
+      ]
+    }
+  ]
+}

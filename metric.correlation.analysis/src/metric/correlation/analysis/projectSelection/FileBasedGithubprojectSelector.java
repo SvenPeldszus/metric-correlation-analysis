@@ -1,15 +1,13 @@
 package metric.correlation.analysis.projectSelection;
 
+import java.util.concurrent.TimeUnit;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 
 public abstract class FileBasedGithubprojectSelector implements IGithubProjectSelector {
 
@@ -22,46 +20,35 @@ public abstract class FileBasedGithubprojectSelector implements IGithubProjectSe
 	}
 
 	/**
-	 * Tests if a repository is a Gradle repository. Checks for file "build.gradle"
-	 * in its contents.
+	 * Tests if a repository has the specified path in its root directory
 	 * 
 	 * @param repositoryName the name of the repository to be tested
 	 * @param OAuthToken
-	 * @return true if it is a Gradle repository, false otherwise.
+	 * @return true if it contains the file in its root directory
 	 */
 	@Override
 	public boolean accept(String repositoryName, String OAuthToken) {
-		boolean result = false;
 		String searchUrl;
 		try {
 			CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-
-			searchUrl = "https://api.github.com/search/code?q=repo:" + repositoryName + "+filename:" + FILE_NAME
-					+ "&access_token=" + OAuthToken;
-
-			HttpGet requestGradleRepository = new HttpGet(searchUrl);
-			requestGradleRepository.addHeader("content-type", "application/json");
-
-			HttpResponse resultResponse = httpClient.execute(requestGradleRepository);
-			String json = EntityUtils.toString(resultResponse.getEntity(), "UTF-8");
-
-			JsonElement jelement = new JsonParser().parse(json);
-
-			try {
-				result = jelement.getAsJsonObject().get("total_count").getAsInt() != 0 ? true : false;
-
-			} catch (Exception e) {
-				LOGGER.log(Level.INFO, e.toString());
+			if (ProjectSelector.GIT_REQUESTS++ % 20 == 0) {
+				TimeUnit.MINUTES.sleep(1);
 			}
-
+			searchUrl = "https://github.com/" + repositoryName + "/blob/master/" + FILE_NAME;
+			HttpGet request = new HttpGet(searchUrl);
+			request.addHeader("content-type", "application/json");
+			request.addHeader("Authorization", "Token " + ProjectSelector.oAuthToken);
+			HttpResponse result = httpClient.execute(request);
+			if (result.getStatusLine().getStatusCode() != 404) {
+				return true;
+			}
 			httpClient.close();
-
 		} catch (Exception e) {
 			LOGGER.log(Level.ERROR, "Could not check if repository is a Gradle repository.");
 			LOGGER.log(Level.INFO, e.getStackTrace());
 		}
 
-		return result;
+		return false;
 	}
 
 }

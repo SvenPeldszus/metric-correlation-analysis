@@ -8,8 +8,11 @@ public class ProductMetricData {
 	String vendor;
 
 	ArrayList<Double> locpcs = new ArrayList<Double>();
+	ArrayList<Double> bugs = new ArrayList<Double>();
+	ArrayList<Double> secBugs = new ArrayList<Double>();
 	ArrayList<String> versions = new ArrayList<String>();
 	ArrayList<Double> igams = new ArrayList<Double>();
+	ArrayList<Double> bugsKloc = new ArrayList<Double>();
 	ArrayList<Double> ldcs = new ArrayList<Double>();
 	ArrayList<Double> wmcs = new ArrayList<Double>();
 	ArrayList<Double> dits = new ArrayList<Double>();
@@ -17,6 +20,7 @@ public class ProductMetricData {
 	ArrayList<Double> cbos = new ArrayList<Double>();
 	ArrayList<Double> igats = new ArrayList<Double>();
 	ArrayList<Double> blobAntiPatterns = new ArrayList<Double>();
+	ArrayList<Double> avgTime = new ArrayList<Double>();
 	ArrayList<Double> llocs = new ArrayList<Double>();
 
 	public ProductMetricData(String productName, String vendor, ArrayList<Double> locpcs, ArrayList<String> versions,

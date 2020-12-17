@@ -39,6 +39,12 @@
 		</plugins>
 	</build>
 	<dependencies>
+		<!-- https://mvnrepository.com/artifact/org.apache.opennlp/opennlp-tools -->
+		<dependency>
+		    <groupId>org.apache.opennlp</groupId>
+		    <artifactId>opennlp-tools</artifactId>
+		    <version>1.9.3</version>
+		</dependency>
 		<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>transport</artifactId>
@@ -78,6 +84,11 @@
 			<groupId>info.debatty</groupId>
 			<artifactId>java-string-similarity</artifactId>
 			<version>1.1.0</version>
+		</dependency>
+		<dependency>
+  			<groupId>org.apache.opennlp</groupId>
+  			<artifactId>opennlp-tools</artifactId>
+ 		 	<version>1.9.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.appenders.log4j</groupId>

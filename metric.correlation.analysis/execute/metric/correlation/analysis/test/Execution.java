@@ -48,7 +48,7 @@ public class Execution {
 	/**
 	 * The maximum amount of projects which should be considered
 	 */
-	private static final int MAX_NUMBER_OF_PROJECTS = 100;
+	private static final int MAX_NUMBER_OF_PROJECTS = 40;
 
 	/**
 	 * From which project should be started
@@ -58,7 +58,7 @@ public class Execution {
 	/**
 	 * The maximum amount of versions per projects which should be considered
 	 */
-	private static final int MAX_VERSIONS_OF_PROJECTS = 20;
+	private static final int MAX_VERSIONS_OF_PROJECTS = 1;
 
 	/**
 	 * If all data should be cleaned after an execution
@@ -120,7 +120,7 @@ public class Execution {
 	public static Collection<Object[]> collectProjects() throws IOException, ProcessingException {
 		Map<String, Collection<String>> excludedProjectNames = getExcludes();
 
-		File projectsReleaseDataJSON = new File(ProjectsOutputCreator.normalizedProjectsDataOutputFilePath);
+		File projectsReleaseDataJSON = new File(ProjectsOutputCreator.PROJECTS_DATA_OUTPUT_FILE_NORMALIZED);
 
 		JsonNode projectsJsonData = JsonLoader.fromFile(projectsReleaseDataJSON);
 		if (VALIDATE_JSON && !checkDocument(projectsJsonData)) {
@@ -156,7 +156,7 @@ public class Execution {
 						skip = true;
 						break;
 					} else {
-						excludedVersions = exclude.getValue();
+						excludedVersions = exclude.getValue(); // code missing?
 					}
 				}
 			}
@@ -189,7 +189,7 @@ public class Execution {
 				ProjectConfiguration projectConfiguration = new ProjectConfiguration(productName, vendorName, gitURL,
 						commitsAndVersions);
 				configs.add(new Object[] { vendorName + "-" + productName, projectConfiguration,
-						new Integer(projectCounter), commitsAndVersions.keySet()});
+						projectCounter, commitsAndVersions.keySet()});
 			}
 			else {
 				skipedProjects++;
@@ -244,7 +244,7 @@ public class Execution {
 	 * @param projectsJsonData The JSON document the schema
 	 * @return true, iff the JSON document complies with the schema
 	 * @throws IOException         Iff the JSON Schema cannot be read
-	 * @throws ProcessingException Iff processing the validation had an error
+	 * @throws ProcessingException Iff processing the va	lidation had an error
 	 */
 	static boolean checkDocument(JsonNode projectsJsonData) throws IOException, ProcessingException {
 		ProcessingReport report = null;
@@ -259,14 +259,15 @@ public class Execution {
 		return true;
 	}
 
-	@Test(timeout = (long) (2 * 60 * 60 * 1000))
+	@Test(timeout = (long) ( 4*60 * 60 * 1000))
 	public void execute() {
+		LOGGER.getRootLogger().setLevel(Level.ALL);
 		if (config.getGitCommitIds().isEmpty()) {
 			fail("No commits available");
 		}
 		addProjectNameToFile(TIMEOUT_FILE);
 		boolean success = calculator.calculate(config);
-		addExcludes();
+		//addExcludes();
 		if (!success) {
 			fail(calculator.getLastErrors().stream().map(Object::toString).collect(Collectors.joining(", ", "[", "]")));
 		}
@@ -315,7 +316,7 @@ public class Execution {
 	@BeforeClass
 	public static void initialize() throws InitializationError {
 		Logger.getRootLogger().setLevel(LOG_LEVEL);
-		if (!MetricCalculation.cleanupRepositories()) {
+		if (CLEAN && !MetricCalculation.cleanupRepositories()) {
 			throw new InitializationError("Couldn't clean repositories");
 		}
 		try {

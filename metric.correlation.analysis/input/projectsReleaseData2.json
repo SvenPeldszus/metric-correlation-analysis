@@ -1,0 +1,213 @@
+{
+  "projects": [
+    {
+      "productName": "dbeaver",
+      "vendorName": "dbeaver",
+      "url": "http://www.github.com/dbeaver/dbeaver.git",
+      "commits": [
+        {
+          "commitId": "f118925f1de2a0644371deef29beeabc39800cdd",
+          "version": "7.2.4"
+        }
+      ]
+    },
+    {
+      "productName": "Apktool",
+      "vendorName": "iBotPeaches",
+      "url": "http://www.github.com/iBotPeaches/Apktool.git",
+      "commits": [
+        {
+          "commitId": "511718ef3aeadf6a96bc167bdfb04d6dda2091e6",
+          "version": "v2.4.1"
+        }
+      ]
+    },
+    {
+      "productName": "storm",
+      "vendorName": "apache",
+      "url": "http://www.github.com/apache/storm.git",
+      "commits": [
+        {
+          "commitId": "bf1986345de5de605abb4fc7b6051fce762bbca5",
+          "version": "v2.2.0"
+        }
+      ]
+    },
+    {
+      "productName": "PictureSelector",
+      "vendorName": "LuckSiege",
+      "url": "http://www.github.com/LuckSiege/PictureSelector.git",
+      "commits": [
+        {
+          "commitId": "29c666fcf91378870ba47ec17328579e96d63705",
+          "version": "v2.5.9"
+        }
+      ]
+    },
+    {
+      "productName": "groovy",
+      "vendorName": "apache",
+      "url": "http://www.github.com/apache/groovy.git",
+      "commits": [
+        {
+          "commitId": "6eb8bbbf62120a29cae04d3cdddf0e4e28954760",
+          "version": "GROOVY_3_0_6"
+        }
+      ]
+    },
+    {
+      "productName": "skywalking",
+      "vendorName": "apache",
+      "url": "http://www.github.com/apache/skywalking.git",
+      "commits": [
+        {
+          "commitId": "5d840e4959b11fab72f869354f784435ad6f1bd4",
+          "version": "v8.2.0"
+        }
+      ]
+    },
+    {
+      "productName": "Signal-Android",
+      "vendorName": "signalapp",
+      "url": "http://www.github.com/signalapp/Signal-Android.git",
+      "commits": [
+        {
+          "commitId": "da9064b714d3d34e2522131d5b53cf354c233a27",
+          "version": "v4.75.8"
+        }
+      ]
+    },
+    {
+      "productName": "beam",
+      "vendorName": "apache",
+      "url": "http://www.github.com/apache/beam.git",
+      "commits": [
+        {
+          "commitId": "1d2700818474c008eaa324ac1b5c49c9d2857298",
+          "version": "website-to-hugo"
+        }
+      ]
+    },
+    {
+      "productName": "orientdb",
+      "vendorName": "orientechnologies",
+      "url": "http://www.github.com/orientechnologies/orientdb.git",
+      "commits": [
+        {
+          "commitId": "8b6ef394ce7b45017e84a65efb9ce7534c56aa8e",
+          "version": "3.1.2"
+        }
+      ]
+    },
+    {
+      "productName": "VitamioBundle",
+      "vendorName": "yixia",
+      "url": "http://www.github.com/yixia/VitamioBundle.git",
+      "commits": [
+        {
+          "commitId": "1b0eacce724153f4305ecfb32190ad76172e14f8",
+          "version": "v4.2.2"
+        }
+      ]
+    },
+    {
+      "productName": "jOOQ",
+      "vendorName": "jOOQ",
+      "url": "http://www.github.com/jOOQ/jOOQ.git",
+      "commits": [
+        {
+          "commitId": "cfc947cf922c6d59f392bb2082054b0a920641ba",
+          "version": "version-3.14.1"
+        }
+      ]
+    },
+    {
+      "productName": "springfox",
+      "vendorName": "springfox",
+      "url": "http://www.github.com/springfox/springfox.git",
+      "commits": [
+        {
+          "commitId": "bc9d0cad83e5dfdb30ddb487594fbc33fc1ba28c",
+          "version": "3.0.0"
+        }
+      ]
+    },
+    {
+      "productName": "hazelcast",
+      "vendorName": "hazelcast",
+      "url": "http://www.github.com/hazelcast/hazelcast.git",
+      "commits": [
+        {
+          "commitId": "7a29c3af6be7de2485a64a4871c192a05b83067f",
+          "version": "v4.0.3"
+        }
+      ]
+    },
+    {
+      "productName": "druid",
+      "vendorName": "apache",
+      "url": "http://www.github.com/apache/druid.git",
+      "commits": [
+        {
+          "commitId": "acdc6ee7ea3a81fb3e70b92d7cc682921f988eb5",
+          "version": "druid-0.20.0"
+        }
+      ]
+    },
+    {
+      "productName": "lottie-react-native",
+      "vendorName": "lottie-react-native",
+      "url": "http://www.github.com/lottie-react-native/lottie-react-native.git",
+      "commits": [
+        {
+          "commitId": "2c7356abf0a2b4f824ffba77142494224084aa94",
+          "version": "v3.5.0"
+        }
+      ]
+    },
+    {
+      "productName": "SmartRefreshLayout",
+      "vendorName": "scwang90",
+      "url": "http://www.github.com/scwang90/SmartRefreshLayout.git",
+      "commits": [
+        {
+          "commitId": "d3598950244d685af762627b87a68d7b75389240",
+          "version": "V2.0.0"
+        }
+      ]
+    },
+    {
+      "productName": "pinpoint",
+      "vendorName": "pinpoint-apm",
+      "url": "http://www.github.com/pinpoint-apm/pinpoint.git",
+      "commits": [
+        {
+          "commitId": "313bddab3ea0ab1b5927d33a1f28e584254b8ab8",
+          "version": "v2.1.0"
+        }
+      ]
+    },
+    {
+      "productName": "hibernate-orm",
+      "vendorName": "hibernate",
+      "url": "http://www.github.com/hibernate/hibernate-orm.git",
+      "commits": [
+        {
+          "commitId": "35ca0d24304cfea9b7071cdb8fa44f1cb91ab6f3",
+          "version": "5.4.23"
+        }
+      ]
+    },
+    {
+      "productName": "spring-framework",
+      "vendorName": "spring-projects",
+      "url": "http://www.github.com/spring-projects/spring-framework.git",
+      "commits": [
+        {
+          "commitId": "5acffaa72da10ba42fe547eeea44d8615cbf99b9",
+          "version": "v5.3.0"
+        }
+      ]
+    }
+  ]
+}

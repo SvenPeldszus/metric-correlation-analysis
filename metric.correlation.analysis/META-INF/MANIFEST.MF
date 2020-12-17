@@ -7,7 +7,8 @@ Bundle-ClassPath: .,
  flanagan.jar
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Require-Bundle: org.eclipse.jdt.core;bundle-version="3.12.0",
+Require-Bundle: metric.correlation.analysis.dependencies,
+ org.eclipse.jdt.core,
  org.junit;bundle-version="4.12.0",
  org.gravity.hulk,
  org.gravity.eclipse,
@@ -16,8 +17,17 @@ Require-Bundle: org.eclipse.jdt.core;bundle-version="3.12.0",
  org.gravity.typegraph.basic,
  org.eclipse.core.resources,
  org.gravity.tgg.modisco.pm,
- metric.correlation.analysis.dependencies,
  org.eclipse.emf.ecore,
- org.eclipse.jgit
+ org.eclipse.jgit,
+ org.junit,
+ org.junit.jupiter.api,
+ org.eclipse.jdt.launching,
+ com.github.spotbugs.plugin.eclipse
 Automatic-Module-Name: Metric-Correlation-Analysis
-Export-Package: metric.correlation.analysis.calculation.impl
+Export-Package: metric.correlation.analysis,
+ metric.correlation.analysis.calculation,
+ metric.correlation.analysis.calculation.impl,
+ metric.correlation.analysis.database,
+ metric.correlation.analysis.io,
+ metric.correlation.analysis.issues
+Bundle-Vendor: RGSE - University of Koblenz-Landau

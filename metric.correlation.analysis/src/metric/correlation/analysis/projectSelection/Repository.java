@@ -10,17 +10,21 @@ public class Repository {
 	private String vendor;
 	private String product;
 	private int stars;
+	private int openIssues;
 
 	/**
 	 * Build a new GitHub repository representation with
-	 * @param vendor - the Vendor
-	 * @param product - the Repository/Product name
-	 * @param stars - the number of stars it has
+	 * 
+	 * @param vendor     - the Vendor
+	 * @param product    - the Repository/Product name
+	 * @param stars      - the number of stars it has
+	 * @param openIssues - number of open issues
 	 */
-	public Repository(String vendor, String product, int stars) {
+	public Repository(String vendor, String product, int stars, int openIssues) {
 		this.vendor = vendor;
 		this.product = product;
 		this.stars = stars;
+		this.openIssues = openIssues;
 	}
 
 	public String getVendor() {
@@ -33,6 +37,10 @@ public class Repository {
 
 	public int getStars() {
 		return stars;
+	}
+
+	public int getOpenIssues() {
+		return openIssues;
 	}
 
 	@Override

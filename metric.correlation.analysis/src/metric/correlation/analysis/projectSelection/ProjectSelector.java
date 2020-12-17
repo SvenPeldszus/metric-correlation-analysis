@@ -45,21 +45,25 @@ import metric.correlation.analysis.vulnerabilities.VulnerabilityDataQueryHandler
 public class ProjectSelector {
 
 	private static final Logger LOGGER = Logger.getLogger(ProjectSelector.class);
-
+	private static final int RESULTS_PER_PAGE = 100;
+	private static final int NUMBER_OF_PAGES = 10;
+	private static final int MAX_SIZE = 150000;
+	private static final int MIN_OPEN_ISSUES = 20;
+	public static final int GIT_REQUESTS_PER_MINUTE = 50;
+	public static int GIT_REQUESTS = 1;
 	/**
 	 * Selectors for checking if the project has an supported build nature
 	 */
 	private static final IGithubProjectSelector[] BUILD_NATURE_SELECTORS = new IGithubProjectSelector[] {
-			new GradleGithubProjectSelector()
-			};
+			new GradleGithubProjectSelector(), new MavenGithubProjectSelector() };
 
 	private RestHighLevelClient elasticClient;
 	// Change this to your own OAuthToken
-	protected static String oAuthToken = "183c10a9725ad6c00195df59c201040e1b3d1d07";
+	protected static String oAuthToken = "1a35c67d8e36c5f52eb14fc47d67a5cceb9a5299 ";
 	protected static String repositoryDatabaseName = "repositories_database_extended";
 
 	public void initializeProjectElasticDatabase() {
-		addDocumentsToElastic(searchForJavaRepositoryNames());
+		addDocumentsToElastic(searchForJavaRepositoryNames(100));
 	}
 
 	/**
@@ -68,20 +72,28 @@ public class ProjectSelector {
 	 * @return a HashSet of {@link Repository} results, which are Java and Gradle
 	 *         projects.
 	 */
-	private HashSet<Repository> searchForJavaRepositoryNames() {
+	public HashSet<Repository> searchForJavaRepositoryNames(int maxProjects) {
 		HashSet<Repository> respositoryResults = new HashSet<Repository>();
 		String url;
-
+		int matchedProjectCount = 0;
+		int sizeError = 0;
+		int issueError = 0;
+		int totalCnt = 0;
+		int acceptError = 0;
 		try {
 			CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 
 			// Requests per page x 100
-			for (int i = 1; i <= 100; i++) {
+			for (int i = 1; i <= NUMBER_OF_PAGES; i++) {
+				if (GIT_REQUESTS++ % GIT_REQUESTS_PER_MINUTE == 0) { 
+					TimeUnit.MINUTES.sleep(1);
+				}
 				url = "https://api.github.com/search/repositories?q=language:java&sort=stars&order=desc"
-						+ "&access_token=" + oAuthToken + "&page=" + i + "&per_page=89";
+						 + "&page=" + i + "&per_page=" + RESULTS_PER_PAGE;
 
 				HttpGet request = new HttpGet(url);
 				request.addHeader("content-type", "application/json");
+				request.addHeader("Authorization", "Token " + oAuthToken);
 				HttpResponse result = httpClient.execute(request);
 
 				String json = EntityUtils.toString(result.getEntity(), "UTF-8");
@@ -90,38 +102,50 @@ public class ProjectSelector {
 				JsonObject jobject = jelement.getAsJsonObject();
 				JsonArray jarray = jobject.getAsJsonArray("items");
 
-				for (int j = 0; j < jarray.size(); j++) {
-
+				for (int j = 0; j < jarray.size() && matchedProjectCount < maxProjects; j++) {
+					totalCnt++;
 					JsonObject jo = (JsonObject) jarray.get(j);
 					String fullName = jo.get("full_name").toString().replace("\"", "");
 					int stars = Integer.parseInt(jo.get("stargazers_count").toString());
-
-					// if ((stars >= 100) && isGradleRepository(fullName)) {
+					int openIssues = Integer.parseInt(jo.get("open_issues").toString());
+					int size = Integer.parseInt(jo.get("size").toString());
+					if (size < MAX_SIZE || size > 2*MAX_SIZE) {
+						sizeError++;
+						continue;
+					}
+					if (openIssues < MIN_OPEN_ISSUES) {
+						issueError++;
+						continue;
+					}
 					boolean accept = false;
 					for (IGithubProjectSelector b : BUILD_NATURE_SELECTORS) {
 						accept |= b.accept(fullName, oAuthToken);
 					}
 					if (accept) {
+						matchedProjectCount++;
 						LOGGER.log(Level.INFO, "MATCH : " + fullName);
-
+						System.out.println("MATCH " + fullName);
 						String product = jo.get("name").toString().replace("\"", "");
 
 						JsonObject owner = (JsonObject) jo.get("owner");
 						String vendor = owner.get("login").toString().replace("\"", "");
 
-						respositoryResults.add(new Repository(vendor, product, stars));
+						respositoryResults.add(new Repository(vendor, product, stars, openIssues));
+					}
+					else {
+						acceptError++;
+						System.out.println("NO MATCH " + fullName);
 					}
 
 					LOGGER.log(Level.INFO, j);
 
-					if ((j == 28) || (j == 58) || (j == 88)) {
-						TimeUnit.MINUTES.sleep(1);
-					}
-
+				}
+				if (matchedProjectCount >= maxProjects || jarray.size() == 0) {
+					break;
 				}
 
-				addDocumentsToElastic(respositoryResults);
-				respositoryResults.clear();
+				// addDocumentsToElastic(respositoryResults);
+				// respositoryResults.clear();
 			}
 
 			httpClient.close();
@@ -129,7 +153,11 @@ public class ProjectSelector {
 		} catch (Exception e) {
 			LOGGER.log(Level.INFO, e.getStackTrace());
 		}
-
+		System.out.println("Total Count : " + totalCnt);
+		System.out.println("Disregarded for size: " + sizeError);
+		System.out.println("Disregarded for issues: " + issueError);
+		System.out.println("Disregarded for lack of mvn/ gradle: " + acceptError);
+		System.out.println("Matched projects: " + matchedProjectCount);
 		return respositoryResults;
 	}
 
@@ -264,7 +292,6 @@ public class ProjectSelector {
 			LOGGER.log(Level.ERROR, "Could not get average number of stars.");
 			LOGGER.log(Level.ERROR, e.getMessage(), e);
 		}
-
 		try {
 			elasticClient.close();
 		} catch (Exception e) {

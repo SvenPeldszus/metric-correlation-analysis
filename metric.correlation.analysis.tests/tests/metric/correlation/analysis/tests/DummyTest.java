@@ -1,5 +1,7 @@
 package metric.correlation.analysis.tests;
 
+import java.util.Arrays;
+
 import org.junit.Test;
 
 public class DummyTest {
@@ -8,4 +10,8 @@ public class DummyTest {
 	public void test() {
 		
 	}
+	
+	public static void main(String []args) {
+	    Arrays.sort(new String[] {"hi"});
+	  } 
 }

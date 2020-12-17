@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.gravity.eclipse.importer.ImportException;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import metric.correlation.analysis.MetricCalculation;
@@ -21,7 +22,7 @@ public class ImportTest {
 	private static final String MAVEN_PROJECT_PATH = "resources/maven-simple";
 	private static final String GRADLE_PROJECT_PATH = "resources/gradle-simple";
 	
-	@Test
+	@Test@Ignore
 	public void testGradleImport() throws ImportException, IOException {
 		File f = new File(GRADLE_PROJECT_PATH);
 		if (!f.exists()) {

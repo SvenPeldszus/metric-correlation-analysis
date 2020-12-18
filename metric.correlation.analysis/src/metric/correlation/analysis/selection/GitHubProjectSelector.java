@@ -224,7 +224,7 @@ public class GitHubProjectSelector {
 	 *
 	 * @return repositoriesWithVulnerabilities as HashSet of SearchHits
 	 */
-	public HashSet<SearchHit> getProjectsWithAtLeastOneVulnerability() {
+	public Set<SearchHit> getProjectsWithAtLeastOneVulnerability() {
 		final HashSet<SearchHit> results = new HashSet<>();
 
 		float numberOfRepositoriesWithVulnerabilities = 0;
@@ -256,7 +256,7 @@ public class GitHubProjectSelector {
 				final String product = map.get(PRODUCT).toString();
 				final String vendor = map.get(VENDOR).toString();
 
-				final HashSet<SearchHit> vulnerabilities = vulnerabilityDataQueryHandler.getVulnerabilities(product, vendor,
+				final Set<SearchHit> vulnerabilities = vulnerabilityDataQueryHandler.getVulnerabilities(product, vendor,
 						"", "TWO");
 
 				if (!vulnerabilities.isEmpty()) {
@@ -343,7 +343,7 @@ public class GitHubProjectSelector {
 				final Map<String, Object> map = searchHit.getSourceAsMap();
 				final String product = map.get(PRODUCT).toString();
 				final String vendor = map.get(VENDOR).toString();
-				final HashSet<SearchHit> vulnerabilities = vulnerabilityDataQueryHandler.getVulnerabilities(product, vendor,
+				final Set<SearchHit> vulnerabilities = vulnerabilityDataQueryHandler.getVulnerabilities(product, vendor,
 						"", "TWO");
 				totalNumberOfVulnerabilites += vulnerabilities.size();
 			}

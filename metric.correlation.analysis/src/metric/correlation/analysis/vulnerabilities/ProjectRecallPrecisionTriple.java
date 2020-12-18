@@ -1,41 +1,39 @@
 package metric.correlation.analysis.vulnerabilities;
 
 public class ProjectRecallPrecisionTriple<projectName, recall, precision> {
-	
+
 	/**
 	 * @author Antoniya Ivanova A class to store a triple of project, recall,
 	 *         precision
 	 *
 	 */
 
-	private String projectName;
+	private final String projectName;
 	private Float recall;
 	private Float precision;
 
-	public ProjectRecallPrecisionTriple(String projectName, Float recall, Float precision) {
+	public ProjectRecallPrecisionTriple(final String projectName) {
 		this.projectName = projectName;
-		this.recall = recall;
-		this.precision = precision;
 	}
 
-	public void setRecall(Float recall) {
+	public void setRecall(final Float recall) {
 		this.recall = recall;
 	}
 
-	public void setPrecision(Float precision) {
+	public void setPrecision(final Float precision) {
 		this.precision = precision;
 	}
 
 	public String getProjectName() {
-		return projectName;
+		return this.projectName;
 	}
 
 	public Float getRecall() {
-		return recall;
+		return this.recall;
 	}
 
 	public Float getPrecision() {
-		return precision;
+		return this.precision;
 	}
 
 }

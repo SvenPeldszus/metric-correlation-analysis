@@ -3,9 +3,9 @@ package metric.correlation.analysis.vulnerabilities;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -135,7 +135,7 @@ public class SearchMethodEvaluator {
 	 */
 	private VulnerabilitySearchResult getCVEsOfProduct(final String product, final String vendor, final String version,
 			final String fuzzyness) {
-		final HashSet<SearchHit> results = this.vdqh.getVulnerabilities(product, vendor, version, fuzzyness);
+		final Set<SearchHit> results = this.vdqh.getVulnerabilities(product, vendor, version, fuzzyness);
 		final ArrayList<String> cveIDs = new ArrayList<>();
 
 		if (!results.isEmpty()) {
@@ -166,15 +166,8 @@ public class SearchMethodEvaluator {
 			vendorNamesOfControlResults.add(controlResult.getVendorName());
 		}
 
-		// Prepare the actual results
-		final ArrayList<VulnerabilitySearchResult> actualResults = new ArrayList<>();
-
-		// Get the actual results using the control results' product and vendor name
-		for (int i = 0; i < productNamesOfControlResults.size(); i++) {
-			final VulnerabilitySearchResult actualSearchResult = getCVEsOfProduct(productNamesOfControlResults.get(i),
-					vendorNamesOfControlResults.get(i), "", "TWO");
-			actualResults.add(actualSearchResult);
-		}
+		final ArrayList<VulnerabilitySearchResult> actualResults = getActualResults(productNamesOfControlResults,
+				vendorNamesOfControlResults);
 
 		// A list for the recall and precision of every project
 		final ArrayList<ProjectRecallPrecisionTriple<String, Double, Double>> recallAndPrecisionPerProject = new ArrayList<>();
@@ -189,20 +182,14 @@ public class SearchMethodEvaluator {
 		int allFalseNegatives = 0;
 
 		// Get control results CVE size
-		int CVEsInControlResults = 0;
+		int cvesInControlResults = 0;
 		for (final VulnerabilitySearchResult controlResult : controlResults) {
-			CVEsInControlResults += controlResult.getCveIDs().size();
+			cvesInControlResults += controlResult.getCveIDs().size();
 		}
 
-		// Recall and precision for each project
-		float singularRecall = 0;
-		float singularPrecision = 0;
 
 		// Iterate the control results
 		for (final VulnerabilitySearchResult controlResult : controlResults) {
-			int truePositives = 0;
-			int falsePositives = 0;
-			int falseNegatives;
 
 			// Get their CVE list and product name
 			final ArrayList<String> expectedCVEIDs = new ArrayList<>(controlResult.getCveIDs());
@@ -212,7 +199,7 @@ public class SearchMethodEvaluator {
 
 			// The triple for a single projects recall and precision calculation
 			final ProjectRecallPrecisionTriple<String, Double, Double> singleRecallAndPrecision = new ProjectRecallPrecisionTriple<>(
-					controlResultProductName, singularRecall, singularPrecision);
+					controlResultProductName);
 
 			// Find the fitting actual result to the control result
 			for (final VulnerabilitySearchResult actualResult : actualResults) {
@@ -233,6 +220,8 @@ public class SearchMethodEvaluator {
 			}
 
 			// If something is found we have true and false positives
+			int truePositives = 0;
+			int falsePositives = 0;
 			for (final String actualCVEID : actualCVEIDs) {
 				if (expectedCVEIDs.remove(actualCVEID)) {
 					truePositives++;
@@ -246,7 +235,7 @@ public class SearchMethodEvaluator {
 			}
 
 			// Calculate the false negatives
-			falseNegatives = expectedCVEIDs.size();
+			final int falseNegatives = expectedCVEIDs.size();
 			allFalseNegatives += expectedCVEIDs.size();
 
 			// Print out the false negatives
@@ -255,12 +244,8 @@ public class SearchMethodEvaluator {
 			}
 
 			// Calculate singular recall and precision
-			singularRecall = truePositives / (float) (truePositives + falseNegatives);
-			if ((truePositives + falsePositives) > 0) {
-				singularPrecision = truePositives / (float) (truePositives + falsePositives);
-			} else {
-				singularPrecision = 0;
-			}
+			final float singularRecall = recall(truePositives, falseNegatives);
+			float singularPrecision = precision(truePositives, falsePositives);
 
 			// Set the recall and precision in the projects triple
 			singleRecallAndPrecision.setRecall(singularRecall);
@@ -287,11 +272,11 @@ public class SearchMethodEvaluator {
 		LOGGER.log(Level.INFO, "################Recall and precision per project################");
 
 		// Calculate overall recall and precision
-		final float recall = allTruePositives / (float) (allTruePositives + allFalseNegatives);
-		final float precision = allTruePositives / (float) (allTruePositives + allFalsePositives);
+		final float recall = recall(allTruePositives, allFalseNegatives);
+		final float precision = recall(allTruePositives, allFalsePositives);
 
 		LOGGER.log(Level.INFO, "################Recall and precision overall################");
-		LOGGER.log(Level.INFO, "For " + CVEsInControlResults + " CVE entries in the control results, there were: ");
+		LOGGER.log(Level.INFO, "For " + cvesInControlResults + " CVE entries in the control results, there were: ");
 		LOGGER.log(Level.INFO, "True positives: " + allTruePositives + " False positives: " + allFalsePositives
 				+ " False negatives: " + allFalseNegatives + " ..in the actual results.");
 		LOGGER.log(Level.INFO,
@@ -299,6 +284,34 @@ public class SearchMethodEvaluator {
 		LOGGER.log(Level.INFO, "The average recall for this method was: " + averageRecall
 				+ " and the average precision was: " + averagePrecission);
 		LOGGER.log(Level.INFO, "################Recall and precision overall################");
+	}
+
+	private float recall(int truePositives, final int falseNegatives) {
+		return truePositives / (float) (truePositives + falseNegatives);
+	}
+
+	private float precision(int truePositives, int falsePositives) {
+		float singularPrecision;
+		if ((truePositives + falsePositives) > 0) {
+			singularPrecision = recall(truePositives, falsePositives);
+		} else {
+			singularPrecision = 0;
+		}
+		return singularPrecision;
+	}
+
+	private ArrayList<VulnerabilitySearchResult> getActualResults(final List<String> productNamesOfControlResults,
+			final List<String> vendorNamesOfControlResults) {
+		// Prepare the actual results
+		final ArrayList<VulnerabilitySearchResult> actualResults = new ArrayList<>();
+
+		// Get the actual results using the control results' product and vendor name
+		for (int i = 0; i < productNamesOfControlResults.size(); i++) {
+			final VulnerabilitySearchResult actualSearchResult = getCVEsOfProduct(productNamesOfControlResults.get(i),
+					vendorNamesOfControlResults.get(i), "", "TWO");
+			actualResults.add(actualSearchResult);
+		}
+		return actualResults;
 	}
 
 	@Test

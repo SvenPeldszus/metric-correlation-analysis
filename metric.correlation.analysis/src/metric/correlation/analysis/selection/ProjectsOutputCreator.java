@@ -3,7 +3,6 @@ package metric.correlation.analysis.selection;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -66,7 +65,7 @@ public class ProjectsOutputCreator {
 	 */
 	public void getProjectReleases() {
 
-		final HashSet<SearchHit> repositoriesWithCVEs = new GitHubProjectSelector().getProjectsWithAtLeastOneVulnerability();
+		final Set<SearchHit> repositoriesWithCVEs = new GitHubProjectSelector().getProjectsWithAtLeastOneVulnerability();
 
 		final JsonObject resultJSON = new JsonObject();
 		final JsonArray resultArray = new JsonArray();

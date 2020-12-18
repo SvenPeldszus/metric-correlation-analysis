@@ -31,14 +31,22 @@ import com.google.gson.stream.JsonReader;
 
 public class ProjectsOutputCreator {
 
+	/**
+	 * Frequently used identifiers
+	 */
+	private static final String COMMITS = "commits";
+	private static final String URL = "url";
+	private static final String VENDOR_NAME = "vendorName";
+	private static final String PRODUCT_NAME = "productName";
+	private static final String PROJECTS = "projects";
 	private static final String NAME = "name";
-
 	private static final String COMMIT = "commit";
-
 	private static final String VERSION = "version";
-
 	private static final String COMMIT_ID = "commitId";
 
+	/**
+	 * The logger of this class
+	 */
 	private static final Logger LOGGER = Logger.getLogger(ProjectsOutputCreator.class);
 
 	/**
@@ -46,7 +54,6 @@ public class ProjectsOutputCreator {
 	 */
 	public static final String PROJECTS_DATA_OUTPUT_FILE = "input/projectsReleaseData2.json";
 	public static final String PROJECTS_DATA_OUTPUT_FILE_NORMALIZED = "input/projectsReleaseData-normalized.json";
-	private static final String PROJECTS = "projects";
 
 	private static final int MAX_COMMITS = 1;
 	private static final int MAX_PROJECTS = 20;
@@ -75,14 +82,14 @@ public class ProjectsOutputCreator {
 
 				final String productName = map.get("Product").toString();
 				final String vendorName = map.get("Vendor").toString();
-				final String URL = "http://www.github.com/" + vendorName + "/" + productName + ".git";
+				final String url = "http://www.github.com/" + vendorName + "/" + productName + ".git";
 
-				projectJSON.addProperty("productName", productName);
-				projectJSON.addProperty("vendorName", vendorName);
-				projectJSON.addProperty("url", URL);
+				projectJSON.addProperty(PRODUCT_NAME, productName);
+				projectJSON.addProperty(VENDOR_NAME, vendorName);
+				projectJSON.addProperty(URL, url);
 
 				final JsonArray commits = getReleaseCommits(httpClient, vendorName, productName);
-				projectJSON.add("commits", commits);
+				projectJSON.add(COMMITS, commits);
 
 				if (commits.size() != 0) {
 					resultArray.add(projectJSON);
@@ -115,6 +122,7 @@ public class ProjectsOutputCreator {
 				try {
 					TimeUnit.MINUTES.sleep(1);
 				} catch (final InterruptedException e) {
+					Thread.currentThread().interrupt();
 					throw new IOException("Couldn't read release commits due to interruption at waiting.", e);
 				}
 			}
@@ -124,7 +132,7 @@ public class ProjectsOutputCreator {
 					+ "&per_page=100";
 
 			final HttpGet request = new HttpGet(gitURL);
-			request.addHeader("Authorization", "Token " + GitHubProjectSelector.oAuthToken);
+			request.addHeader("Authorization", "Token " + GitHubProjectSelector.OAuthToken);
 			request.addHeader("content-type", "application/json");
 
 			final HttpResponse result = httpClient.execute(request);
@@ -138,31 +146,40 @@ public class ProjectsOutputCreator {
 			}
 			final JsonArray jarray = jsonObject.getAsJsonArray();
 
-			if (jarray.size() != 0) {
-
-				// Iterate over the project releases on the page
-				for (int j = 0; j < jarray.size(); j++) {
-
-					final JsonObject commit = new JsonObject();
-					final JsonObject jo = (JsonObject) jarray.get(j);
-
-					commit.addProperty(COMMIT_ID,
-							jo.get(COMMIT).getAsJsonObject().get("sha").toString().replace("\"", ""));
-					final String version = jo.get(NAME).toString().replace("\"", "");
-					commit.addProperty(VERSION, version);
-					if (!version.toLowerCase()
-							.matches(".*(\\.|-|_|^)(snapshot|doc|pre|alpha|beta|rc|m|prototype)(?![a-z]).*")) {
-						commits.add(commit);
-						if (commits.size() >= commitLimit) {
-							return commits;
-						}
-					}
-				}
-			} else {
+			if ((jarray.size() == 0) || getCommitsForPage(commits, jarray, commitLimit)) {
 				break;
 			}
 		}
 		return commits;
+	}
+
+	/**
+	 *
+	 * @param commits
+	 * @param jarray
+	 * @param limit
+	 * @return returns true, if the limit of commits has been reached
+	 */
+	private boolean getCommitsForPage(final JsonArray commits, final JsonArray jarray, final Integer limit) {
+		// Iterate over the project releases on the page
+		for (int j = 0; j < jarray.size(); j++) {
+
+			final JsonObject commit = new JsonObject();
+			final JsonObject jo = (JsonObject) jarray.get(j);
+
+			commit.addProperty(COMMIT_ID,
+					jo.get(COMMIT).getAsJsonObject().get("sha").toString().replace("\"", ""));
+			final String version = jo.get(NAME).toString().replace("\"", "");
+			commit.addProperty(VERSION, version);
+			if (!version.toLowerCase()
+					.matches(".*(\\.|-|_|^)(snapshot|doc|pre|alpha|beta|rc|m|prototype)(?![a-z]).*")) {
+				commits.add(commit);
+				if (commits.size() >= limit) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	@Test
@@ -175,7 +192,7 @@ public class ProjectsOutputCreator {
 		final Set<Repository> reps = new GitHubProjectSelector().searchForJavaRepositoryNames(MAX_PROJECTS);
 		for (final Repository rep : reps) {
 			final JsonObject projectJSON = createJson(rep);
-			if (((JsonArray) projectJSON.get("commits")).size() > 0) {
+			if (((JsonArray) projectJSON.get(COMMITS)).size() > 0) {
 				resultArray.add(projectJSON);
 			}
 		}
@@ -189,17 +206,17 @@ public class ProjectsOutputCreator {
 	private JsonObject createJson(final Repository rep) {
 		final JsonObject projectJSON = new JsonObject();
 		final String URL = "http://www.github.com/" + rep.getVendor() + "/" + rep.getProduct() + ".git";
-		projectJSON.addProperty("productName", rep.getProduct());
-		projectJSON.addProperty("vendorName", rep.getVendor());
-		projectJSON.addProperty("url", URL);
+		projectJSON.addProperty(PRODUCT_NAME, rep.getProduct());
+		projectJSON.addProperty(VENDOR_NAME, rep.getVendor());
+		projectJSON.addProperty(URL, URL);
 		final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 		JsonArray commits;
 		try {
 			commits = getReleaseCommits(httpClient, rep.getVendor(), rep.getProduct());
-			projectJSON.add("commits", commits);
+			projectJSON.add(COMMITS, commits);
 		} catch (final Exception e) {
 			LOGGER.log(Level.ERROR, e.getMessage(), e);
-			projectJSON.add("commits", new JsonArray());
+			projectJSON.add(COMMITS, new JsonArray());
 		}
 		return projectJSON;
 	}
@@ -212,12 +229,12 @@ public class ProjectsOutputCreator {
 		try (JsonReader reader = new JsonReader(new FileReader(PROJECTS_DATA_OUTPUT_FILE))) {
 			final JsonObject jsonTree = gson.fromJson(reader, JsonObject.class);
 			// Getting all the projects
-			final JsonArray projects = jsonTree.get("projects").getAsJsonArray();
+			final JsonArray projects = jsonTree.get(PROJECTS).getAsJsonArray();
 
 			// Setting up the normalized file
 			final JsonObject resultJSON = new JsonObject();
 			final JsonArray resultArray = new JsonArray();
-			resultJSON.add("projects", resultArray);
+			resultJSON.add(PROJECTS, resultArray);
 
 			// Iterate the unnormalized file
 			for (int i = 0; i < projects.size(); i++) {
@@ -228,15 +245,15 @@ public class ProjectsOutputCreator {
 				final JsonObject projectJSON = new JsonObject();
 
 				// Set the new properties
-				projectJSON.addProperty("productName", jo.get("productName").getAsString());
-				projectJSON.addProperty("vendorName", jo.get("vendorName").getAsString());
-				projectJSON.addProperty("url", jo.get("url").getAsString());
+				projectJSON.addProperty(PRODUCT_NAME, jo.get(PRODUCT_NAME).getAsString());
+				projectJSON.addProperty(VENDOR_NAME, jo.get(VENDOR_NAME).getAsString());
+				projectJSON.addProperty(URL, jo.get(URL).getAsString());
 
 				// New commit data
 				final JsonArray newCommits = new JsonArray();
-				projectJSON.add("commits", newCommits);
+				projectJSON.add(COMMITS, newCommits);
 
-				final JsonArray commits = jo.get("commits").getAsJsonArray();
+				final JsonArray commits = jo.get(COMMITS).getAsJsonArray();
 
 				for (int j = 0; j < commits.size(); j++) {
 					final JsonObject commitAndVersion = (JsonObject) commits.get(j);

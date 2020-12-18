@@ -37,7 +37,7 @@ public abstract class FileBasedGithubprojectSelector implements IGithubProjectSe
 			searchUrl = "https://github.com/" + repositoryName + "/blob/master/" + fileName;
 			HttpGet request = new HttpGet(searchUrl);
 			request.addHeader("content-type", "application/json");
-			request.addHeader("Authorization", "Token " + GitHubProjectSelector.oAuthToken);
+			request.addHeader("Authorization", "Token " + GitHubProjectSelector.OAuthToken);
 			HttpResponse result = httpClient.execute(request);
 			if (result.getStatusLine().getStatusCode() != 404) {
 				return true;

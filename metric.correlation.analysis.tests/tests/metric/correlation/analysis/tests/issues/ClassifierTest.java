@@ -1,4 +1,4 @@
-package metric.correlation.analysis.issues;
+package metric.correlation.analysis.tests.issues;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,13 +12,18 @@ import org.bson.Document;
 import org.junit.Test;
 
 import metric.correlation.analysis.database.MongoDBHelper;
+import metric.correlation.analysis.issues.Classifier;
+import metric.correlation.analysis.issues.Issue;
+import metric.correlation.analysis.issues.NLPClassifier;
 import metric.correlation.analysis.issues.Issue.IssueType;
 
-public class ClassifierTester {
+public class ClassifierTest {
+	private static final String METRIC_CORRELATION = "metric_correlation";
+
 	/**
 	 * The logger of this class
 	 */
-	private static final Logger LOGGER = Logger.getLogger(ClassifierTester.class);
+	private static final Logger LOGGER = Logger.getLogger(ClassifierTest.class);
 
 	private static final String BUG_COLLECTION = "issues_test_bugs";
 	private static final String SECURITY_COLLECTION = "issues_test_security";
@@ -34,12 +39,12 @@ public class ClassifierTester {
 		this.classifier = classifier;
 	}
 
-	public ClassifierTester() {
+	public ClassifierTest() {
 		initData();
 	}
 
 	private void getTestIssues(final String collection, final List<Issue> issueList) {
-		try (MongoDBHelper db = new MongoDBHelper("metric_correlation", collection)) {
+		try (MongoDBHelper db = new MongoDBHelper(METRIC_CORRELATION, collection)) {
 			final List<Document> docs = db.getDocuments(new HashMap<>());
 			for (final Document doc : docs) {
 				final Issue issue = new Issue();
@@ -97,13 +102,13 @@ public class ClassifierTester {
 	 */
 	public void testSample() {
 		List<Document> sample;
-		try (MongoDBHelper db = new MongoDBHelper("metric_correlation", "issues")) {
+		try (MongoDBHelper db = new MongoDBHelper(METRIC_CORRELATION, "issues")) {
 			sample = db.sampleDocs(new String[] { "BUG", "FEATURE_REQUEST" }, 250);
 			final long deleted = db.delete(sample);
 			LOGGER.info("deleted" + deleted);
 		}
 		if (sample != null) {
-			try (MongoDBHelper db = new MongoDBHelper("metric_correlation", "issues_test_security")) {
+			try (MongoDBHelper db = new MongoDBHelper(METRIC_CORRELATION, "issues_test_security")) {
 				db.addDocuments(sample);
 			}
 		}
@@ -113,7 +118,7 @@ public class ClassifierTester {
 	public void testLists() throws IOException {
 		List<Document> sample;
 		final List<Issue> trainIssues = new LinkedList<>();
-		try (MongoDBHelper db = new MongoDBHelper("metric_correlation", "issues")) {
+		try (MongoDBHelper db = new MongoDBHelper(METRIC_CORRELATION, "issues")) {
 			sample = db.sampleDocs(new String[] { "BUG", "SECURITY_BUG", "FEATURE_REQUEST", "SECURITY_FEATURE" },
 					10000);
 			for (final Document doc : sample) {
@@ -122,11 +127,10 @@ public class ClassifierTester {
 				trainIssues.add(issue);
 			}
 		}
-		final ClassifierTester tester = new ClassifierTester();
+		final ClassifierTest tester = new ClassifierTest();
 		final Classifier nlp = new NLPClassifier();
-		//nlp.train(trainIssues);
+		nlp.train(trainIssues);
 		tester.setClassifier(nlp);
-
 		tester.rateClassifier();
 	}
 }

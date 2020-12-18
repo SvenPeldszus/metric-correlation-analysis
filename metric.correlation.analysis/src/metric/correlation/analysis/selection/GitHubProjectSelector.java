@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.http.HttpHost;
@@ -74,7 +75,7 @@ public class GitHubProjectSelector {
 
 	private RestHighLevelClient elasticClient;
 	// Change this to your own OAuthToken
-	public static String oAuthToken = System.getenv("GITHUB_OAUTH");
+	public static final String OAuthToken = System.getenv("GITHUB_OAUTH");
 	protected static String repositoryDatabaseName = "repositories_database_extended";
 
 	public void initializeProjectElasticDatabase() {
@@ -87,7 +88,7 @@ public class GitHubProjectSelector {
 	 * @return a HashSet of {@link Repository} results, which are Java and Gradle
 	 *         projects.
 	 */
-	public HashSet<Repository> searchForJavaRepositoryNames(final int maxProjects) {
+	public Set<Repository> searchForJavaRepositoryNames(final int maxProjects) {
 		final HashSet<Repository> respositoryResults = new HashSet<>();
 		String url;
 		int matchedProjectCount = 0;
@@ -108,7 +109,7 @@ public class GitHubProjectSelector {
 
 				final HttpGet request = new HttpGet(url);
 				request.addHeader("content-type", "application/json");
-				request.addHeader("Authorization", "Token " + oAuthToken);
+				request.addHeader("Authorization", "Token " + OAuthToken);
 				final HttpResponse result = httpClient.execute(request);
 
 				final String json = EntityUtils.toString(result.getEntity(), "UTF-8");
@@ -134,7 +135,7 @@ public class GitHubProjectSelector {
 					}
 					boolean accept = false;
 					for (final IGithubProjectSelector b : BUILD_NATURE_SELECTORS) {
-						accept |= b.accept(fullName, oAuthToken);
+						accept |= b.accept(fullName, OAuthToken);
 					}
 					if (accept) {
 						matchedProjectCount++;
@@ -181,7 +182,7 @@ public class GitHubProjectSelector {
 	 * @param repositoriesSet repositories to be added to the Elasticsearch database
 	 *                        (index).
 	 */
-	private void addDocumentsToElastic(final HashSet<Repository> repositoriesSet) {
+	private void addDocumentsToElastic(final Set<Repository> repositoriesSet) {
 		final ArrayList<HashMap<String, Object>> repositories = new ArrayList<>();
 
 		// Build the repository document
@@ -347,7 +348,7 @@ public class GitHubProjectSelector {
 				totalNumberOfVulnerabilites += vulnerabilities.size();
 			}
 
-			averageVulnerabilitiesPerProject = totalNumberOfVulnerabilites / totalNumberOfProjects;
+			averageVulnerabilitiesPerProject = totalNumberOfVulnerabilites / (double) totalNumberOfProjects;
 
 			LOGGER.log(Level.INFO,
 					"The average number of discovered vulnerabilities is : " + averageVulnerabilitiesPerProject);

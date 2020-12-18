@@ -194,7 +194,7 @@ public class IssueMetrics implements IMetricCalculator {
 				issues.add(issue);
 			}
 		}
-		System.out.println(issues.size());
+		LOGGER.info(issues.size());
 	}
 
 	@Test

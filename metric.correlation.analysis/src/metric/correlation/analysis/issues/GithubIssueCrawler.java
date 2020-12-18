@@ -61,22 +61,17 @@ public class GithubIssueCrawler implements IssueCrawler {
 		if (!this.lastProject.equals(product)) {
 			getReleases(vendor, product); // fetches release data
 		}
-		try {
-			this.releaseDate = getReleaseDate(vendor, product, version);
-			List<Issue> issues;
-			if (USE_DATABASE) {
-				issues = fetchIssuesFromDatabase(product);
-			} else {
-				issues = getIssuesAfterDate(vendor, product, this.releaseDate); // github api only has afterDate filter
-			}
-			this.nextReleaseDate = getNextReleaseDate(vendor, product, version); // today if latest release
-			LOGGER.info("release: " + this.releaseDate);
-			LOGGER.info("until: " + this.nextReleaseDate);
-			return filterIssues(issues);
-		} catch (final IOException e) {
-			LOGGER.error("Error while trying to collect relevant issues", e);
-			return null;
+		this.releaseDate = getReleaseDate(vendor, product, version);
+		List<Issue> issues;
+		if (USE_DATABASE) {
+			issues = fetchIssuesFromDatabase(product);
+		} else {
+			issues = getIssuesAfterDate(vendor, product, this.releaseDate); // github api only has afterDate filter
 		}
+		this.nextReleaseDate = getNextReleaseDate(vendor, product, version); // today if latest release
+		LOGGER.info("release: " + this.releaseDate);
+		LOGGER.info("until: " + this.nextReleaseDate);
+		return filterIssues(issues);
 	}
 
 	private List<Issue> fetchIssuesFromDatabase(final String product) {
@@ -216,10 +211,7 @@ public class GithubIssueCrawler implements IssueCrawler {
 	private boolean isSecurityLabel(final String labelName) {
 		return labelName.contains("security") || labelName.contains("authorization")
 				|| labelName.contains("authentication") || labelName.contains("oidc") || labelName.contains("saml"); // might
-		// make
-		// it
-		// more
-		// sophisticated
+		// TODO: make it more sophisticated
 	}
 
 	private boolean isBugLabel(final String labelName) {
@@ -244,6 +236,7 @@ public class GithubIssueCrawler implements IssueCrawler {
 			try {
 				TimeUnit.SECONDS.sleep(5);
 			} catch (final InterruptedException e) {
+				Thread.currentThread().interrupt();
 				throw new IOException("Couldn't read due to interruption at waiting.", e);
 			}
 		}
@@ -251,7 +244,7 @@ public class GithubIssueCrawler implements IssueCrawler {
 		try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
 			final HttpGet request = new HttpGet(path);
 			request.addHeader("content-type", "application/json");
-			request.addHeader("Authorization", "Token " + GitHubProjectSelector.oAuthToken);
+			request.addHeader("Authorization", "Token " + GitHubProjectSelector.OAuthToken);
 			final HttpResponse result = httpClient.execute(request);
 			final String json = EntityUtils.toString(result.getEntity(), "UTF-8");
 			jelement = new JsonParser().parse(json);
@@ -314,19 +307,6 @@ public class GithubIssueCrawler implements IssueCrawler {
 	 */
 	private void sortReleases() {
 		this.releases.sort(VersionHelper::compare);
-	}
-
-	//@Test
-	public void test() throws IOException {
-		final GithubIssueCrawler crawler = new GithubIssueCrawler();
-		final List<Issue> issues = crawler.getIssues("quarkusio", "quarkus", "0.0.1");
-		try (MongoDBHelper db = new MongoDBHelper("metric_correlation", "issues")) {
-			final List<Map<String, Object>> test = new ArrayList<>();
-			for (final Issue issue : issues) {
-				test.add(issue.asMap());
-			}
-			db.storeMany(test);
-		}
 	}
 
 	// This was used to get issues with a specific label for the classification

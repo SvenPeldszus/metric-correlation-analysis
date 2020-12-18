@@ -116,8 +116,6 @@ public class NLPClassifier implements Classifier {
 		for (final String next : words) {
 			if (next.length() >= 3) {
 				wordList.add(next);
-			} else {
-				wordList.add(next);
 			}
 		}
 		return wordList.toArray(new String[] {});
@@ -130,7 +128,7 @@ public class NLPClassifier implements Classifier {
 
 	}
 
-	private void createTrainingFile(final List<Issue> issues, final String path, final Map<IssueType, String> cats) {
+	private void createTrainingFile(final List<Issue> issues, final String path, final Map<IssueType, String> cats) throws IOException {
 		try (FileWriter fw = new FileWriter(new File(path))) {
 			for (final Issue issue : issues) {
 				final String[] tokens = preProcess(issue.getTitle() + " " + issue.getBody() + getComments(issue));
@@ -146,10 +144,6 @@ public class NLPClassifier implements Classifier {
 				fw.write(line);
 				fw.write("\r\n");
 			}
-
-		} catch (final IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 

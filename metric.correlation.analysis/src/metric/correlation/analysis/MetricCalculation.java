@@ -583,9 +583,6 @@ public class MetricCalculation {
 			for (final String value : entry.getValue()) {
 				newestMetrics.add(Double.valueOf(value));
 			}
-			// for (Integer newVersionIndex : productToNewestIndex.values()) {
-			// newestMetrics.add(Double.valueOf(entry.getValue().get(newVersionIndex.intValue())));
-			// }
 			newestVersionOnly.put(entry.getKey(), newestMetrics);
 		}
 

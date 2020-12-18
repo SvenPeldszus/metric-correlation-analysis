@@ -51,28 +51,25 @@ public class NLPClassifier implements Classifier {
 	/**
 	 * NOTE: creating the class will already load the model for higher performance,
 	 * if you train a new model you need to call init before it will be used
+	 * @throws IOException
 	 */
-	public NLPClassifier() {
+	public NLPClassifier() throws IOException {
 		init();
 	}
 
-	public void init() {
+	public void init() throws IOException {
 		initMaps();
 		final Bundle bundle = Platform.getBundle(Activator.PLUGIN_ID);
 		final URL bugEntry = bundle.getEntry(BUG_CLASSIFIER_PATH);
 		try (InputStream modelIn = bugEntry.openStream()) {
 			final DoccatModel me = new DoccatModel(modelIn);
 			this.bugCategorizer = new DocumentCategorizerME(me);
-		} catch (final Exception e) {
-			LOGGER.error(e.getMessage(), e);
 		}
 
 		final URL securityEntry = bundle.getEntry(SECURITY_CLASSIFIER_PATH);
 		try (InputStream modelIn = securityEntry.openStream()) {
 			final DoccatModel me = new DoccatModel(modelIn);
 			this.securityCategorizer = new DocumentCategorizerME(me);
-		} catch (final Exception e) {
-			LOGGER.error(e.getMessage(), e);
 		}
 	}
 
@@ -185,7 +182,7 @@ public class NLPClassifier implements Classifier {
 	}
 
 	@Override
-	public void train(final List<Issue> issues) {
+	public void train(final List<Issue> issues) throws IOException {
 		createTrainingFile(issues, BUG_TRAINING_PATH, this.bugMap);
 		createTrainingFile(issues, SECURITY_TRAINING_PATH, this.securityMap);
 		createModel(BUG_TRAINING_PATH, BUG_CLASSIFIER_PATH);

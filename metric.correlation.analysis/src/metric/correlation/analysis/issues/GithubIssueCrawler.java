@@ -43,13 +43,14 @@ public class GithubIssueCrawler implements IssueCrawler {
 	private final String lastProject = "";
 	private LocalDate releaseDate;
 	private LocalDate nextReleaseDate;
-	private Classifier classifier = new NLPClassifier();
+	private Classifier classifier;
 	private final Map<String, List<String>> versionList; // this is used for manual release order, because automated can
 	// have
 	// some issues
 	private static final Double DAYS_PER_MONTH = 30.4;
 
-	public GithubIssueCrawler() {
+	public GithubIssueCrawler() throws IOException {
+		this.classifier = new NLPClassifier();
 		this.versionList = new HashMap<>();
 		this.versionList.put("antlr4", Arrays.asList("4.0", "4.1", "4.2", "4.2.1", "4.2.2", "4.3", "4.4", "4.5",
 				"4.5.1", "4.5.1-1", "4.5.2", "4.5.3", "4.6", "4.7", "4.7.1", "4.7.2", "4.8"));

@@ -40,11 +40,15 @@ import metric.correlation.analysis.issues.Issue.IssueType;
 import metric.correlation.analysis.issues.IssueCrawler;
 
 public class IssueMetrics implements IMetricCalculator {
-	private final IssueCrawler issueCrawler = new GithubIssueCrawler(); // uses default nlpclassifier
+	private final IssueCrawler issueCrawler;
 	private final Map<String, Double> metricValues = new HashMap<>();
 	private final Map<String, String> metricResults = new HashMap<>();
 	private static final Logger LOGGER = Logger.getLogger(IssueMetrics.class);
 	private static final double DAYS_PER_MONTH = 30.4;
+
+	public IssueMetrics() throws IOException {
+		this.issueCrawler = new GithubIssueCrawler(); // uses default nlpclassifier
+	}
 
 	@Override
 	public boolean calculateMetric(final IJavaProject project, final String productName, final String vendorName, final String version,

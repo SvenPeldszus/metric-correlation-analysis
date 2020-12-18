@@ -19,7 +19,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.junit.Test;
@@ -32,13 +31,12 @@ import com.google.gson.JsonParser;
 import metric.correlation.analysis.database.MongoDBHelper;
 import metric.correlation.analysis.io.VersionHelper;
 import metric.correlation.analysis.issues.Issue.IssueType;
-import metric.correlation.analysis.selection.ProjectSelector;
+import metric.correlation.analysis.selection.GitHubProjectSelector;
 import metric.correlation.analysis.selection.ProjectsOutputCreator;
 
 public class GithubIssueCrawler implements IssueCrawler {
 	private static final boolean STORE_ISSUES = false;
 	private static final Logger LOGGER = Logger.getLogger(GithubIssueCrawler.class);
-	protected static String oAuthToken = "1a35c67d8e36c5f52eb14fc47d67a5cceb9a5299 ";
 	private static final boolean USE_DATABASE = false;
 	private HashMap<String, String> releaseCommits;
 	private List<String> releases = new ArrayList<>(); // sorted list of release versions
@@ -58,27 +56,26 @@ public class GithubIssueCrawler implements IssueCrawler {
 	}
 
 	@Override
-	public List<Issue> getIssues(final String vendor, final String product, final String version) {
-		List<Issue> issues;
+	public List<Issue> getIssues(final String vendor, final String product, final String version) throws IOException {
 		if (!this.lastProject.equals(product)) {
 			getReleases(vendor, product); // fetches release data
 		}
 		try {
 			this.releaseDate = getReleaseDate(vendor, product, version);
+			List<Issue> issues;
 			if (USE_DATABASE) {
 				issues = fetchIssuesFromDatabase(product);
 			} else {
 				issues = getIssuesAfterDate(vendor, product, this.releaseDate); // github api only has afterDate filter
 			}
 			this.nextReleaseDate = getNextReleaseDate(vendor, product, version); // today if latest release
-			issues = filterIssues(issues);
+			LOGGER.info("release: " + this.releaseDate);
+			LOGGER.info("until: " + this.nextReleaseDate);
+			return filterIssues(issues);
 		} catch (final IOException e) {
 			LOGGER.error("Error while trying to collect relevant issues", e);
 			return null;
 		}
-		LOGGER.info("release: " + this.releaseDate);
-		LOGGER.info("until: " + this.nextReleaseDate);
-		return issues;
 	}
 
 	private List<Issue> fetchIssuesFromDatabase(final String product) {
@@ -94,7 +91,8 @@ public class GithubIssueCrawler implements IssueCrawler {
 		return issues;
 	}
 
-	private LocalDate getNextReleaseDate(final String vendor, final String product, final String version) throws IOException {
+	private LocalDate getNextReleaseDate(final String vendor, final String product, final String version)
+			throws IOException {
 		if (product.equals("Activiti")) {
 			return LocalDate.now(); // they have old releases with higher version number...
 		}
@@ -113,8 +111,8 @@ public class GithubIssueCrawler implements IssueCrawler {
 		return ChronoUnit.DAYS.between(this.releaseDate, this.nextReleaseDate) / DAYS_PER_MONTH;
 	}
 
-	private List<Issue> getIssuesAfterDate(final String vendor, final String product, final LocalDate releaseDate2) throws IOException
-	{
+	private List<Issue> getIssuesAfterDate(final String vendor, final String product, final LocalDate releaseDate2)
+			throws IOException {
 		final List<Issue> issues = new ArrayList<>();
 		final List<Map<String, Object>> tmpList = new ArrayList<>();
 		for (int i = 1; i < 150; i++) {
@@ -240,7 +238,7 @@ public class GithubIssueCrawler implements IssueCrawler {
 	 * @throws IOException when request fails
 	 */
 	public static JsonElement getJsonFromURL(final String path) throws IOException {
-		if ((ProjectSelector.gitRequests++ % ProjectSelector.GIT_REQUESTS_PER_MINUTE) == 0) {
+		if ((GitHubProjectSelector.gitRequests++ % GitHubProjectSelector.GIT_REQUESTS_PER_MINUTE) == 0) {
 			LOGGER.info("waiting for api");
 			try {
 				TimeUnit.SECONDS.sleep(5);
@@ -252,7 +250,7 @@ public class GithubIssueCrawler implements IssueCrawler {
 		try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
 			final HttpGet request = new HttpGet(path);
 			request.addHeader("content-type", "application/json");
-			request.addHeader("Authorization", "Token " + oAuthToken);
+			request.addHeader("Authorization", "Token " + GitHubProjectSelector.oAuthToken);
 			final HttpResponse result = httpClient.execute(request);
 			final String json = EntityUtils.toString(result.getEntity(), "UTF-8");
 			jelement = new JsonParser().parse(json);
@@ -264,6 +262,9 @@ public class GithubIssueCrawler implements IssueCrawler {
 	private LocalDate getReleaseDate(final String vendor, final String product, final String version)
 			throws IOException {
 		final String commit = this.releaseCommits.get(version);
+		if (commit == null) {
+			throw new IOException("Cannot read a commit for version " + version + '.');
+		}
 		final String url = "https://api.github.com/repos/" + vendor + "/" + product + "/commits/" + commit;
 		final JsonObject jobject = getJsonFromURL(url).getAsJsonObject();
 		final JsonObject commitObject = (JsonObject) jobject.get("commit");
@@ -275,7 +276,7 @@ public class GithubIssueCrawler implements IssueCrawler {
 		return date;
 	}
 
-	private boolean getReleases(final String vendor, final String product) {
+	private void getReleases(final String vendor, final String product) throws IOException {
 		boolean setOnlyCommits = false;
 		if (this.versionList.containsKey(product)) {
 			this.releases = this.versionList.get(product); // use pre-defined release list
@@ -300,16 +301,11 @@ public class GithubIssueCrawler implements IssueCrawler {
 			} else { // make sure every commit id is set
 				for (final String version : this.releases) {
 					if (!this.releaseCommits.containsKey(version)) {
-						LOGGER.log(Level.ERROR, "Mising commit id for " + version);
-						return false;
+						throw new IOException("Mising commit id for " + version);
 					}
 				}
 			}
-		} catch (final IOException e) {
-			LOGGER.error(e.getMessage(), e);
-			return false;
 		}
-		return true;
 	}
 
 	/**
@@ -319,8 +315,8 @@ public class GithubIssueCrawler implements IssueCrawler {
 		this.releases.sort(VersionHelper::compare);
 	}
 
-	// @Test
-	public void test() {
+	//@Test
+	public void test() throws IOException {
 		final GithubIssueCrawler crawler = new GithubIssueCrawler();
 		final List<Issue> issues = crawler.getIssues("quarkusio", "quarkus", "0.0.1");
 		try (MongoDBHelper db = new MongoDBHelper("metric_correlation", "issues")) {

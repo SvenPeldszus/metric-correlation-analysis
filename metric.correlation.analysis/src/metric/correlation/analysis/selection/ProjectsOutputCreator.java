@@ -24,6 +24,7 @@ import org.junit.Test;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
@@ -58,7 +59,7 @@ public class ProjectsOutputCreator {
 	 */
 	public void getProjectReleases() {
 
-		final HashSet<SearchHit> repositoriesWithCVEs = new ProjectSelector().getProjectsWithAtLeastOneVulnerability();
+		final HashSet<SearchHit> repositoriesWithCVEs = new GitHubProjectSelector().getProjectsWithAtLeastOneVulnerability();
 
 		final JsonObject resultJSON = new JsonObject();
 		final JsonArray resultArray = new JsonArray();
@@ -110,7 +111,7 @@ public class ProjectsOutputCreator {
 		final JsonArray commits = new JsonArray();
 		// Iterate over the project release pages
 		for (int i = 1; i < 100; i++) {
-			if ((ProjectSelector.gitRequests++ % 20) == 0) {
+			if ((GitHubProjectSelector.gitRequests++ % 20) == 0) {
 				try {
 					TimeUnit.MINUTES.sleep(1);
 				} catch (final InterruptedException e) {
@@ -123,12 +124,19 @@ public class ProjectsOutputCreator {
 					+ "&per_page=100";
 
 			final HttpGet request = new HttpGet(gitURL);
-			request.addHeader("Authorization", "Token " + ProjectSelector.oAuthToken);
+			request.addHeader("Authorization", "Token " + GitHubProjectSelector.oAuthToken);
 			request.addHeader("content-type", "application/json");
 
 			final HttpResponse result = httpClient.execute(request);
+			if(result.getStatusLine().getStatusCode() != 200) {
+				throw new IOException(result.getStatusLine().toString());
+			}
 			final String json = EntityUtils.toString(result.getEntity(), "UTF-8");
-			final JsonArray jarray = new JsonParser().parse(json).getAsJsonArray();
+			final JsonElement jsonObject = new JsonParser().parse(json);
+			if (jsonObject.isJsonObject()) {
+				throw new IOException(((JsonObject) jsonObject).get("message").toString());
+			}
+			final JsonArray jarray = jsonObject.getAsJsonArray();
 
 			if (jarray.size() != 0) {
 
@@ -164,7 +172,7 @@ public class ProjectsOutputCreator {
 		final JsonObject resultJSON = new JsonObject();
 		final JsonArray resultArray = new JsonArray();
 		resultJSON.add(PROJECTS, resultArray);
-		final Set<Repository> reps = new ProjectSelector().searchForJavaRepositoryNames(MAX_PROJECTS);
+		final Set<Repository> reps = new GitHubProjectSelector().searchForJavaRepositoryNames(MAX_PROJECTS);
 		for (final Repository rep : reps) {
 			final JsonObject projectJSON = createJson(rep);
 			if (((JsonArray) projectJSON.get("commits")).size() > 0) {

@@ -31,3 +31,4 @@ Export-Package: metric.correlation.analysis,
  metric.correlation.analysis.io,
  metric.correlation.analysis.issues
 Bundle-Vendor: RGSE - University of Koblenz-Landau
+Bundle-Activator: metric.correlation.analysis.Activator

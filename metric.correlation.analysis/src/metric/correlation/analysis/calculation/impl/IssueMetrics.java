@@ -12,6 +12,7 @@ import static metric.correlation.analysis.calculation.impl.IssueMetrics.MetricKe
 import static metric.correlation.analysis.calculation.impl.IssueMetrics.MetricKeysImpl.SECURITY_BUG_ISSUES_CONT;
 import static metric.correlation.analysis.calculation.impl.IssueMetrics.MetricKeysImpl.SECURITY_BUG_ISSUES_KLOC;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -47,7 +48,7 @@ public class IssueMetrics implements IMetricCalculator {
 
 	@Override
 	public boolean calculateMetric(final IJavaProject project, final String productName, final String vendorName, final String version,
-			final Map<String, String> map) {
+			final Map<String, String> map) throws IOException {
 		for (final String key : getMetricKeys()) {
 			this.metricValues.put(key, 0.0);
 		}
@@ -193,7 +194,7 @@ public class IssueMetrics implements IMetricCalculator {
 	}
 
 	@Test
-	public void retrieveIssues() {
+	public void retrieveIssues() throws IOException {
 		final GithubIssueCrawler crawler = new GithubIssueCrawler();
 		final String product = "antlr4";
 		final String vendor = "antlr";

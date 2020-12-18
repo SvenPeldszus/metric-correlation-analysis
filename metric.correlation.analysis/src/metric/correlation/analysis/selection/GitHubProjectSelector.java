@@ -43,7 +43,7 @@ import metric.correlation.analysis.vulnerabilities.VulnerabilityDataQueryHandler
  *
  */
 
-public class ProjectSelector {
+public class GitHubProjectSelector {
 
 	private static final String LOCALHOST = "localhost";
 
@@ -56,7 +56,7 @@ public class ProjectSelector {
 	/**
 	 * The logger of this class
 	 */
-	private static final Logger LOGGER = Logger.getLogger(ProjectSelector.class);
+	private static final Logger LOGGER = Logger.getLogger(GitHubProjectSelector.class);
 
 	private static final int RESULTS_PER_PAGE = 100;
 	private static final int NUMBER_OF_PAGES = 10;
@@ -74,7 +74,7 @@ public class ProjectSelector {
 
 	private RestHighLevelClient elasticClient;
 	// Change this to your own OAuthToken
-	protected static String oAuthToken = "1a35c67d8e36c5f52eb14fc47d67a5cceb9a5299 ";
+	public static String oAuthToken = System.getenv("GITHUB_OAUTH");
 	protected static String repositoryDatabaseName = "repositories_database_extended";
 
 	public void initializeProjectElasticDatabase() {

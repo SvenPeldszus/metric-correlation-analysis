@@ -2,7 +2,7 @@ package metric.correlation.analysis.test;
 
 import org.junit.Test;
 
-import metric.correlation.analysis.selection.ProjectSelector;
+import metric.correlation.analysis.selection.GitHubProjectSelector;
 
 public class InitializeDatabases {
 	
@@ -18,7 +18,7 @@ public class InitializeDatabases {
 		new metric.correlation.analysis.vulnerabilities.VulnerabilityDataImporter();
 		
 		// Initializes the project database on a running elastic client
-		ProjectSelector ps = new ProjectSelector();
+		GitHubProjectSelector ps = new GitHubProjectSelector();
 		ps.initializeProjectElasticDatabase();
 	}
 }

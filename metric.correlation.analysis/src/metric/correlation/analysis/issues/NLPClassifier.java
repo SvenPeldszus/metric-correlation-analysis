@@ -1,10 +1,10 @@
 package metric.correlation.analysis.issues;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -12,7 +12,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.Platform;
+import org.osgi.framework.Bundle;
 
+import metric.correlation.analysis.Activator;
 import metric.correlation.analysis.issues.Issue.IssueType;
 import opennlp.tools.doccat.BagOfWordsFeatureGenerator;
 import opennlp.tools.doccat.DoccatFactory;
@@ -46,8 +49,8 @@ public class NLPClassifier implements Classifier {
 	private DocumentCategorizerME securityCategorizer;
 
 	/**
-	 * NOTE: creating the class will already load the model for higher performance, if you train a new model
-	 * you need to call init before it will be used
+	 * NOTE: creating the class will already load the model for higher performance,
+	 * if you train a new model you need to call init before it will be used
 	 */
 	public NLPClassifier() {
 		init();
@@ -55,13 +58,17 @@ public class NLPClassifier implements Classifier {
 
 	public void init() {
 		initMaps();
-		try (InputStream modelIn = new FileInputStream(BUG_CLASSIFIER_PATH)) {
+		final Bundle bundle = Platform.getBundle(Activator.PLUGIN_ID);
+		final URL bugEntry = bundle.getEntry(BUG_CLASSIFIER_PATH);
+		try (InputStream modelIn = bugEntry.openStream()) {
 			final DoccatModel me = new DoccatModel(modelIn);
 			this.bugCategorizer = new DocumentCategorizerME(me);
 		} catch (final Exception e) {
 			LOGGER.error(e.getMessage(), e);
 		}
-		try (InputStream modelIn = new FileInputStream(SECURITY_CLASSIFIER_PATH)) {
+
+		final URL securityEntry = bundle.getEntry(SECURITY_CLASSIFIER_PATH);
+		try (InputStream modelIn = securityEntry.openStream()) {
 			final DoccatModel me = new DoccatModel(modelIn);
 			this.securityCategorizer = new DocumentCategorizerME(me);
 		} catch (final Exception e) {
@@ -168,10 +175,11 @@ public class NLPClassifier implements Classifier {
 			params.put(TrainingParameters.ITERATIONS_PARAM, 500);
 			params.put(TrainingParameters.CUTOFF_PARAM, 1);
 			params.put(TrainingParameters.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
-			final DoccatFactory factory = new DoccatFactory(new FeatureGenerator[] { new BagOfWordsFeatureGenerator() });
+			final DoccatFactory factory = new DoccatFactory(
+					new FeatureGenerator[] { new BagOfWordsFeatureGenerator() });
 			final DoccatModel model = DocumentCategorizerME.train("en", sampleStream, params, factory);
 			model.serialize(new File(output));
-		}catch (final IOException e) {
+		} catch (final IOException e) {
 			LOGGER.error(e.getMessage(), e);
 		}
 	}

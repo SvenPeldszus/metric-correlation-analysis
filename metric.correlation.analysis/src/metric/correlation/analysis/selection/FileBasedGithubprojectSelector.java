@@ -31,13 +31,13 @@ public abstract class FileBasedGithubprojectSelector implements IGithubProjectSe
 		String searchUrl;
 		try {
 			CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-			if (ProjectSelector.gitRequests++ % 20 == 0) {
+			if (GitHubProjectSelector.gitRequests++ % 20 == 0) {
 				TimeUnit.MINUTES.sleep(1);
 			}
 			searchUrl = "https://github.com/" + repositoryName + "/blob/master/" + fileName;
 			HttpGet request = new HttpGet(searchUrl);
 			request.addHeader("content-type", "application/json");
-			request.addHeader("Authorization", "Token " + ProjectSelector.oAuthToken);
+			request.addHeader("Authorization", "Token " + GitHubProjectSelector.oAuthToken);
 			HttpResponse result = httpClient.execute(request);
 			if (result.getStatusLine().getStatusCode() != 404) {
 				return true;

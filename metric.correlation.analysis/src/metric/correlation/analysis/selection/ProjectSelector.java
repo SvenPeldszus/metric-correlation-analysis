@@ -1,4 +1,4 @@
-package metric.correlation.analysis.projectSelection;
+package metric.correlation.analysis.selection;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,6 +29,7 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.metrics.avg.Avg;
 import org.elasticsearch.search.aggregations.metrics.avg.AvgAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -44,13 +45,27 @@ import metric.correlation.analysis.vulnerabilities.VulnerabilityDataQueryHandler
 
 public class ProjectSelector {
 
+	private static final String LOCALHOST = "localhost";
+
+	private static final String STARS = "Stars";
+
+	private static final String PRODUCT = "Product";
+
+	private static final String VENDOR = "Vendor";
+
+	/**
+	 * The logger of this class
+	 */
 	private static final Logger LOGGER = Logger.getLogger(ProjectSelector.class);
+
 	private static final int RESULTS_PER_PAGE = 100;
 	private static final int NUMBER_OF_PAGES = 10;
 	private static final int MAX_SIZE = 150000;
 	private static final int MIN_OPEN_ISSUES = 20;
 	public static final int GIT_REQUESTS_PER_MINUTE = 50;
-	public static int GIT_REQUESTS = 1;
+
+	public static int gitRequests = 1;
+
 	/**
 	 * Selectors for checking if the project has an supported build nature
 	 */
@@ -68,12 +83,12 @@ public class ProjectSelector {
 
 	/**
 	 * Searches for Java + Gradle repositories on GitHub.
-	 * 
+	 *
 	 * @return a HashSet of {@link Repository} results, which are Java and Gradle
 	 *         projects.
 	 */
-	public HashSet<Repository> searchForJavaRepositoryNames(int maxProjects) {
-		HashSet<Repository> respositoryResults = new HashSet<Repository>();
+	public HashSet<Repository> searchForJavaRepositoryNames(final int maxProjects) {
+		final HashSet<Repository> respositoryResults = new HashSet<>();
 		String url;
 		int matchedProjectCount = 0;
 		int sizeError = 0;
@@ -81,35 +96,35 @@ public class ProjectSelector {
 		int totalCnt = 0;
 		int acceptError = 0;
 		try {
-			CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+			final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 
 			// Requests per page x 100
 			for (int i = 1; i <= NUMBER_OF_PAGES; i++) {
-				if (GIT_REQUESTS++ % GIT_REQUESTS_PER_MINUTE == 0) { 
+				if ((gitRequests++ % GIT_REQUESTS_PER_MINUTE) == 0) {
 					TimeUnit.MINUTES.sleep(1);
 				}
 				url = "https://api.github.com/search/repositories?q=language:java&sort=stars&order=desc"
-						 + "&page=" + i + "&per_page=" + RESULTS_PER_PAGE;
+						+ "&page=" + i + "&per_page=" + RESULTS_PER_PAGE;
 
-				HttpGet request = new HttpGet(url);
+				final HttpGet request = new HttpGet(url);
 				request.addHeader("content-type", "application/json");
 				request.addHeader("Authorization", "Token " + oAuthToken);
-				HttpResponse result = httpClient.execute(request);
+				final HttpResponse result = httpClient.execute(request);
 
-				String json = EntityUtils.toString(result.getEntity(), "UTF-8");
+				final String json = EntityUtils.toString(result.getEntity(), "UTF-8");
 
-				JsonElement jelement = new JsonParser().parse(json);
-				JsonObject jobject = jelement.getAsJsonObject();
-				JsonArray jarray = jobject.getAsJsonArray("items");
+				final JsonElement jelement = new JsonParser().parse(json);
+				final JsonObject jobject = jelement.getAsJsonObject();
+				final JsonArray jarray = jobject.getAsJsonArray("items");
 
-				for (int j = 0; j < jarray.size() && matchedProjectCount < maxProjects; j++) {
+				for (int j = 0; (j < jarray.size()) && (matchedProjectCount < maxProjects); j++) {
 					totalCnt++;
-					JsonObject jo = (JsonObject) jarray.get(j);
-					String fullName = jo.get("full_name").toString().replace("\"", "");
-					int stars = Integer.parseInt(jo.get("stargazers_count").toString());
-					int openIssues = Integer.parseInt(jo.get("open_issues").toString());
-					int size = Integer.parseInt(jo.get("size").toString());
-					if (size < MAX_SIZE || size > 2*MAX_SIZE) {
+					final JsonObject jo = (JsonObject) jarray.get(j);
+					final String fullName = jo.get("full_name").toString().replace("\"", "");
+					final int stars = Integer.parseInt(jo.get("stargazers_count").toString());
+					final int openIssues = Integer.parseInt(jo.get("open_issues").toString());
+					final int size = Integer.parseInt(jo.get("size").toString());
+					if ((size < MAX_SIZE) || (size > (2*MAX_SIZE))) {
 						sizeError++;
 						continue;
 					}
@@ -118,29 +133,28 @@ public class ProjectSelector {
 						continue;
 					}
 					boolean accept = false;
-					for (IGithubProjectSelector b : BUILD_NATURE_SELECTORS) {
+					for (final IGithubProjectSelector b : BUILD_NATURE_SELECTORS) {
 						accept |= b.accept(fullName, oAuthToken);
 					}
 					if (accept) {
 						matchedProjectCount++;
 						LOGGER.log(Level.INFO, "MATCH : " + fullName);
-						System.out.println("MATCH " + fullName);
-						String product = jo.get("name").toString().replace("\"", "");
+						final String product = jo.get("name").toString().replace("\"", "");
 
-						JsonObject owner = (JsonObject) jo.get("owner");
-						String vendor = owner.get("login").toString().replace("\"", "");
+						final JsonObject owner = (JsonObject) jo.get("owner");
+						final String vendor = owner.get("login").toString().replace("\"", "");
 
 						respositoryResults.add(new Repository(vendor, product, stars, openIssues));
 					}
 					else {
 						acceptError++;
-						System.out.println("NO MATCH " + fullName);
+						LOGGER.error("NO MATCH " + fullName);
 					}
 
 					LOGGER.log(Level.INFO, j);
 
 				}
-				if (matchedProjectCount >= maxProjects || jarray.size() == 0) {
+				if ((matchedProjectCount >= maxProjects) || (jarray.size() == 0)) {
 					break;
 				}
 
@@ -150,45 +164,45 @@ public class ProjectSelector {
 
 			httpClient.close();
 
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			LOGGER.log(Level.INFO, e.getStackTrace());
 		}
-		System.out.println("Total Count : " + totalCnt);
-		System.out.println("Disregarded for size: " + sizeError);
-		System.out.println("Disregarded for issues: " + issueError);
-		System.out.println("Disregarded for lack of mvn/ gradle: " + acceptError);
-		System.out.println("Matched projects: " + matchedProjectCount);
+		LOGGER.error("Total Count : " + totalCnt);
+		LOGGER.error("Disregarded for size: " + sizeError);
+		LOGGER.error("Disregarded for issues: " + issueError);
+		LOGGER.error("Disregarded for lack of mvn/ gradle: " + acceptError);
+		LOGGER.error("Matched projects: " + matchedProjectCount);
 		return respositoryResults;
 	}
 
 	/**
 	 * Adds the found repositories to an Elasticsearch DB.
-	 * 
+	 *
 	 * @param repositoriesSet repositories to be added to the Elasticsearch database
 	 *                        (index).
 	 */
-	private void addDocumentsToElastic(HashSet<Repository> repositoriesSet) {
-		ArrayList<HashMap<String, Object>> repositories = new ArrayList<HashMap<String, Object>>();
+	private void addDocumentsToElastic(final HashSet<Repository> repositoriesSet) {
+		final ArrayList<HashMap<String, Object>> repositories = new ArrayList<>();
 
 		// Build the repository document
-		for (Repository repositoryResult : repositoriesSet) {
-			HashMap<String, Object> repository = new HashMap<String, Object>();
-			repository.put("Vendor", repositoryResult.getVendor());
-			repository.put("Product", repositoryResult.getProduct());
-			repository.put("Stars", repositoryResult.getStars());
+		for (final Repository repositoryResult : repositoriesSet) {
+			final HashMap<String, Object> repository = new HashMap<>();
+			repository.put(VENDOR, repositoryResult.getVendor());
+			repository.put(PRODUCT, repositoryResult.getProduct());
+			repository.put(STARS, repositoryResult.getStars());
 			repositories.add(repository);
 		}
 
-		elasticClient = new RestHighLevelClient(RestClient.builder(new HttpHost("localhost", 9200, "http")));
+		this.elasticClient = new RestHighLevelClient(RestClient.builder(new HttpHost(LOCALHOST, 9200, "http")));
 
 		IndexRequest indexRequest = null;
 
-		for (Iterator<HashMap<String, Object>> iterator = (repositories).iterator(); iterator.hasNext();) {
+		for (final Iterator<HashMap<String, Object>> iterator = (repositories).iterator(); iterator.hasNext();) {
 			indexRequest = new IndexRequest(repositoryDatabaseName, "doc").source(iterator.next());
 
 			try {
-				elasticClient.index(indexRequest);
-			} catch (Exception e) {
+				this.elasticClient.index(indexRequest);
+			} catch (final Exception e) {
 				LOGGER.log(Level.ERROR, "Could not index document " + iterator.toString());
 				LOGGER.log(Level.ERROR, e.getMessage(), e);
 			}
@@ -197,8 +211,8 @@ public class ProjectSelector {
 		LOGGER.log(Level.INFO, "Inserting " + repositories.size() + " documents into index.");
 
 		try {
-			elasticClient.close();
-		} catch (IOException e) {
+			this.elasticClient.close();
+		} catch (final IOException e) {
 			LOGGER.log(Level.ERROR, e.getMessage(), e);
 		}
 	}
@@ -206,42 +220,42 @@ public class ProjectSelector {
 	/**
 	 * Gets the projects with at least one vulnerability in the local Elasticsearch
 	 * database.
-	 * 
+	 *
 	 * @return repositoriesWithVulnerabilities as HashSet of SearchHits
 	 */
 	public HashSet<SearchHit> getProjectsWithAtLeastOneVulnerability() {
-		HashSet<SearchHit> results = new HashSet<SearchHit>();
+		final HashSet<SearchHit> results = new HashSet<>();
 
 		float numberOfRepositoriesWithVulnerabilities = 0;
 		float percentageOfRepositoriesWithVulnerabilities = 0;
 		float totalNumberOfProjects = 0;
 
-		elasticClient = new RestHighLevelClient(RestClient.builder(new HttpHost("localhost", 9200, "http")));
-		VulnerabilityDataQueryHandler vulnerabilityDataQueryHandler = new VulnerabilityDataQueryHandler();
+		this.elasticClient = new RestHighLevelClient(RestClient.builder(new HttpHost(LOCALHOST, 9200, "http")));
+		final VulnerabilityDataQueryHandler vulnerabilityDataQueryHandler = new VulnerabilityDataQueryHandler();
 
-		SearchRequest searchRequest = new SearchRequest(repositoryDatabaseName);
+		final SearchRequest searchRequest = new SearchRequest(repositoryDatabaseName);
 
-		SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+		final SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 		searchSourceBuilder.size(1000);
 		searchSourceBuilder.query(QueryBuilders.matchAllQuery());
 
 		searchRequest.source(searchSourceBuilder);
 
 		try {
-			SearchResponse searchResponse = elasticClient.search(searchRequest);
+			final SearchResponse searchResponse = this.elasticClient.search(searchRequest);
 			totalNumberOfProjects = searchResponse.getHits().getTotalHits();
 
-			SearchHits repositoryHits = searchResponse.getHits();
-			SearchHit[] repositorySearchHits = repositoryHits.getHits();
+			final SearchHits repositoryHits = searchResponse.getHits();
+			final SearchHit[] repositorySearchHits = repositoryHits.getHits();
 
-			for (SearchHit repository : repositorySearchHits) {
+			for (final SearchHit repository : repositorySearchHits) {
 
-				Map<String, Object> map = repository.getSourceAsMap();
+				final Map<String, Object> map = repository.getSourceAsMap();
 
-				String product = map.get("Product").toString();
-				String vendor = map.get("Vendor").toString();
+				final String product = map.get(PRODUCT).toString();
+				final String vendor = map.get(VENDOR).toString();
 
-				HashSet<SearchHit> vulnerabilities = vulnerabilityDataQueryHandler.getVulnerabilities(product, vendor,
+				final HashSet<SearchHit> vulnerabilities = vulnerabilityDataQueryHandler.getVulnerabilities(product, vendor,
 						"", "TWO");
 
 				if (!vulnerabilities.isEmpty()) {
@@ -258,8 +272,8 @@ public class ProjectSelector {
 			LOGGER.log(Level.INFO,
 					"Repositories with at least one vulnerability : " + numberOfRepositoriesWithVulnerabilities);
 
-			elasticClient.close();
-		} catch (Exception e) {
+			this.elasticClient.close();
+		} catch (final Exception e) {
 			LOGGER.log(Level.ERROR, e.getMessage(), e);
 		}
 
@@ -270,31 +284,31 @@ public class ProjectSelector {
 	 * Gets the average number of stars in the Elasticsearch repository database.
 	 */
 	public void getAverageNumberOfStars() {
-		elasticClient = new RestHighLevelClient(RestClient.builder(new HttpHost("localhost", 9200, "http")));
+		this.elasticClient = new RestHighLevelClient(RestClient.builder(new HttpHost(LOCALHOST, 9200, "http")));
 
-		SearchRequest searchRequest = new SearchRequest(repositoryDatabaseName);
-		AvgAggregationBuilder avgAB = AggregationBuilders.avg("avg_stars").field("Stars");
+		final SearchRequest searchRequest = new SearchRequest(repositoryDatabaseName);
+		final AvgAggregationBuilder avgAB = AggregationBuilders.avg("avg_stars").field(STARS);
 
-		SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+		final SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 		searchSourceBuilder.query(QueryBuilders.matchAllQuery()).aggregation(avgAB);
 		searchRequest.source(searchSourceBuilder);
 
 		try {
-			SearchResponse searchResponse = elasticClient.search(searchRequest);
-			Aggregations aggregations = searchResponse.getAggregations();
+			final SearchResponse searchResponse = this.elasticClient.search(searchRequest);
+			final Aggregations aggregations = searchResponse.getAggregations();
 
-			Avg avgStars = aggregations.get("avg_stars");
+			final Avg avgStars = aggregations.get("avg_stars");
 
-			double avg = avgStars.getValue();
+			final double avg = avgStars.getValue();
 
 			LOGGER.log(Level.INFO, avg);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			LOGGER.log(Level.ERROR, "Could not get average number of stars.");
 			LOGGER.log(Level.ERROR, e.getMessage(), e);
 		}
 		try {
-			elasticClient.close();
-		} catch (Exception e) {
+			this.elasticClient.close();
+		} catch (final Exception e) {
 			LOGGER.log(Level.ERROR, "Could not close RestHighLevelClient!");
 			LOGGER.log(Level.ERROR, e.getMessage(), e);
 		}
@@ -305,30 +319,30 @@ public class ProjectSelector {
 	 * the Elasticsearch repository database.
 	 */
 	public double getAverageNumberOfDiscoveredVulnerabilities() {
-		elasticClient = new RestHighLevelClient(RestClient.builder(new HttpHost("localhost", 9200, "http")));
-		VulnerabilityDataQueryHandler vulnerabilityDataQueryHandler = new VulnerabilityDataQueryHandler();
+		this.elasticClient = new RestHighLevelClient(RestClient.builder(new HttpHost(LOCALHOST, 9200, "http")));
+		final VulnerabilityDataQueryHandler vulnerabilityDataQueryHandler = new VulnerabilityDataQueryHandler();
 		long totalNumberOfProjects = 0;
 		long totalNumberOfVulnerabilites = 0;
 		double averageVulnerabilitiesPerProject = 0;
 
-		SearchRequest searchRequest = new SearchRequest(repositoryDatabaseName);
-		SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+		final SearchRequest searchRequest = new SearchRequest(repositoryDatabaseName);
+		final SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 		searchSourceBuilder.size(1000);
 		searchSourceBuilder.query(QueryBuilders.matchAllQuery());
 		searchRequest.source(searchSourceBuilder);
 
 		try {
-			SearchResponse searchResponse = elasticClient.search(searchRequest);
+			final SearchResponse searchResponse = this.elasticClient.search(searchRequest);
 			totalNumberOfProjects = searchResponse.getHits().getTotalHits();
 
-			SearchHits repositoryHits = searchResponse.getHits();
-			SearchHit[] searchHits = repositoryHits.getHits();
+			final SearchHits repositoryHits = searchResponse.getHits();
+			final SearchHit[] searchHits = repositoryHits.getHits();
 
-			for (SearchHit searchHit : searchHits) {
-				Map<String, Object> map = searchHit.getSourceAsMap();
-				String product = map.get("Product").toString();
-				String vendor = map.get("Vendor").toString();
-				HashSet<SearchHit> vulnerabilities = vulnerabilityDataQueryHandler.getVulnerabilities(product, vendor,
+			for (final SearchHit searchHit : searchHits) {
+				final Map<String, Object> map = searchHit.getSourceAsMap();
+				final String product = map.get(PRODUCT).toString();
+				final String vendor = map.get(VENDOR).toString();
+				final HashSet<SearchHit> vulnerabilities = vulnerabilityDataQueryHandler.getVulnerabilities(product, vendor,
 						"", "TWO");
 				totalNumberOfVulnerabilites += vulnerabilities.size();
 			}
@@ -340,8 +354,8 @@ public class ProjectSelector {
 			LOGGER.log(Level.INFO,
 					"The total number of discovered vulnerabilities is : " + totalNumberOfVulnerabilites);
 
-			elasticClient.close();
-		} catch (Exception e) {
+			this.elasticClient.close();
+		} catch (final Exception e) {
 			LOGGER.log(Level.ERROR, e.getMessage(), e);
 		}
 

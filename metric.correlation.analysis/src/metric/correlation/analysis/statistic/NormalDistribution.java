@@ -9,6 +9,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -19,44 +20,44 @@ public class NormalDistribution {
 
 	private static final Logger LOGGER = Logger.getLogger(NormalDistribution.class);
 
-	public static double significance = 0.05;
+	public static final double SIGNIFICANCE_LEVEL = 0.05;
 
-	private DecimalFormat dFormat;
+	private final DecimalFormat dFormat;
 
 	public NormalDistribution() {
-		DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance();
+		final DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance();
 		dfs.setDecimalSeparator('.');
-		dFormat = new DecimalFormat("0.00", dfs);
+		this.dFormat = new DecimalFormat("0.00", dfs);
 	}
-	
-	public void testAndStoreNormalDistribution(Map<String, List<Double>> metricValues, File resultFile) {
+
+	public void testAndStoreNormalDistribution(final Map<String, List<Double>> metricValues, final File resultFile) {
 
 		try (BufferedWriter writer = new BufferedWriter(new FileWriter(resultFile))){
 			writer.write(
 					"Metric name, W-Value, W-crit, Normal Distribution, P-Value, Significance, Normal Distribution");
-			for (String metricName : metricValues.keySet()) {
-				List<Double> list = metricValues.get(metricName);
-				double[] doubleArray = new double[list.size()];
+			for (final Entry<String, List<Double>> entry : metricValues.entrySet()) {
+				final List<Double> list = entry.getValue();
+				final double[] doubleArray = new double[list.size()];
 				for(int i = 0; i < list.size(); i++) {
 					doubleArray[i] = list.get(i);
 				}
-				Normality norm = new Normality(doubleArray);
+				final Normality norm = new Normality(doubleArray);
 				final double wValue = norm.shapiroWilkWvalue();
 				final double wCritical = norm.shapiroWilkCriticalW();
 				final boolean normalDistribution = wValue <= wCritical;
 				final double pValue = norm.shapiroWilkPvalue();
-				final boolean normalDistribution2 = pValue <= significance;
-				
-				printNextLine(writer, metricName, wValue, wCritical, normalDistribution, pValue, normalDistribution2);
+				final boolean normalDistribution2 = pValue <= SIGNIFICANCE_LEVEL;
+
+				printNextLine(writer, entry.getKey(), wValue, wCritical, normalDistribution, pValue, normalDistribution2);
 			}
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			LOGGER.log(Level.ERROR, e.getMessage(), e);
 		}
 	}
 
 	/**
 	 * Prints the next line
-	 * 
+	 *
 	 * @param writer The writer
 	 * @param metricName
 	 * @param wValue
@@ -66,42 +67,42 @@ public class NormalDistribution {
 	 * @param normalDistribution2
 	 * @throws IOException
 	 */
-	public void printNextLine(BufferedWriter writer, String metricName, final double wValue, final double wCritical,
+	public void printNextLine(final BufferedWriter writer, final String metricName, final double wValue, final double wCritical,
 			final boolean normalDistribution, final double pValue, final boolean normalDistribution2)
-			throws IOException {
+					throws IOException {
 		writer.newLine();
 		writer.write(metricName);
 		writer.write(",");
-		writer.write(dFormat.format(wValue));
+		writer.write(this.dFormat.format(wValue));
 		writer.write(",");
-		writer.write(dFormat.format(wCritical));
+		writer.write(this.dFormat.format(wCritical));
 		writer.write(",");
 		writer.write(Boolean.toString(normalDistribution));
 		writer.write(",");
-		writer.write(dFormat.format(pValue));
+		writer.write(this.dFormat.format(pValue));
 		writer.write(",");
-		writer.write(dFormat.format(significance));
+		writer.write(this.dFormat.format(SIGNIFICANCE_LEVEL));
 		writer.write(",");
 		writer.write(Boolean.toString(normalDistribution2));
 	}
 
 	/**
 	 *  size of the returned matrix: double[][] = [AnzahlMetriken][Anzahl Apps]
-	 * 
+	 *
 	 * @param metrics A linked hashmap of metric keys and values
 	 * @return a double matrix
 	 */
-	public double[][] getValues(LinkedHashMap<String, List<Double>> metrics) {
-		double[][] results = new double[metrics.size()][];
+	public double[][] getValues(final LinkedHashMap<String, List<Double>> metrics) {
+		final double[][] results = new double[metrics.size()][];
 		int metricIndex = 0;
-		for(List<Double> values : metrics.values()) {
-			double[] doubleArray = new double[values.size()];
-			for(int doubleArrayIndex = 0; doubleArrayIndex < values.size(); doubleArrayIndex++) {
-				doubleArray[metricIndex] = values.get(doubleArrayIndex);
+		for(final List<Double> values : metrics.values()) {
+			final double[] doubleArray = new double[values.size()];
+			for (final Double value : values) {
+				doubleArray[metricIndex] = value;
 			}
 			results[metricIndex++] = doubleArray;
 		}
-		
+
 		return results;
 	}
 

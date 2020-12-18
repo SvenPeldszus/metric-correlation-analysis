@@ -1,4 +1,4 @@
-package metric.correlation.analysis.projectSelection;
+package metric.correlation.analysis.selection;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -30,6 +30,14 @@ import com.google.gson.stream.JsonReader;
 
 public class ProjectsOutputCreator {
 
+	private static final String NAME = "name";
+
+	private static final String COMMIT = "commit";
+
+	private static final String VERSION = "version";
+
+	private static final String COMMIT_ID = "commitId";
+
 	private static final Logger LOGGER = Logger.getLogger(ProjectsOutputCreator.class);
 
 	/**
@@ -38,7 +46,7 @@ public class ProjectsOutputCreator {
 	public static final String PROJECTS_DATA_OUTPUT_FILE = "input/projectsReleaseData2.json";
 	public static final String PROJECTS_DATA_OUTPUT_FILE_NORMALIZED = "input/projectsReleaseData-normalized.json";
 	private static final String PROJECTS = "projects";
-	
+
 	private static final int MAX_COMMITS = 1;
 	private static final int MAX_PROJECTS = 20;
 
@@ -50,34 +58,32 @@ public class ProjectsOutputCreator {
 	 */
 	public void getProjectReleases() {
 
-		HashSet<SearchHit> repositoriesWithCVEs = new ProjectSelector().getProjectsWithAtLeastOneVulnerability();
+		final HashSet<SearchHit> repositoriesWithCVEs = new ProjectSelector().getProjectsWithAtLeastOneVulnerability();
 
-		JsonObject resultJSON = new JsonObject();
-		JsonArray resultArray = new JsonArray();
+		final JsonObject resultJSON = new JsonObject();
+		final JsonArray resultArray = new JsonArray();
 		resultJSON.add(PROJECTS, resultArray);
 
 		try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
 
 			// Iterate the vulnerable projects
-			for (SearchHit repository : repositoriesWithCVEs) {
-				JsonObject projectJSON = new JsonObject();
+			for (final SearchHit repository : repositoriesWithCVEs) {
+				final JsonObject projectJSON = new JsonObject();
 
-				Map<String, Object> map = repository.getSourceAsMap();
+				final Map<String, Object> map = repository.getSourceAsMap();
 
-				String productName = map.get("Product").toString();
-				String vendorName = map.get("Vendor").toString();
-				String URL = "http://www.github.com/" + vendorName + "/" + productName + ".git";
+				final String productName = map.get("Product").toString();
+				final String vendorName = map.get("Vendor").toString();
+				final String URL = "http://www.github.com/" + vendorName + "/" + productName + ".git";
 
 				projectJSON.addProperty("productName", productName);
 				projectJSON.addProperty("vendorName", vendorName);
 				projectJSON.addProperty("url", URL);
 
-				JsonArray commits = getReleaseCommits(httpClient, vendorName, productName);
+				final JsonArray commits = getReleaseCommits(httpClient, vendorName, productName);
 				projectJSON.add("commits", commits);
 
-				if (commits.size() == 0) {
-					continue;
-				} else {
+				if (commits.size() != 0) {
 					resultArray.add(projectJSON);
 				}
 
@@ -88,48 +94,54 @@ public class ProjectsOutputCreator {
 			try (FileWriter fileWriter = new FileWriter(PROJECTS_DATA_OUTPUT_FILE)) {
 				fileWriter.write(resultJSON.toString());
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			LOGGER.log(Level.ERROR, e.getMessage(), e);
 		}
 
 	}
 
-	public JsonArray getReleaseCommits(CloseableHttpClient httpClient, String vendorName, String productName) throws Exception{
-		return getReleaseCommits(httpClient, vendorName, productName, MAX_COMMITS );
+	public JsonArray getReleaseCommits(final CloseableHttpClient httpClient, final String vendorName,
+			final String productName) throws IOException {
+		return getReleaseCommits(httpClient, vendorName, productName, MAX_COMMITS);
 	}
-	public JsonArray getReleaseCommits(CloseableHttpClient httpClient, String vendorName, String productName, Integer commitLimit)
-			throws Exception {
-		JsonArray commits = new JsonArray();
+
+	public JsonArray getReleaseCommits(final CloseableHttpClient httpClient, final String vendorName,
+			final String productName, final Integer commitLimit) throws IOException {
+		final JsonArray commits = new JsonArray();
 		// Iterate over the project release pages
 		for (int i = 1; i < 100; i++) {
-			if (ProjectSelector.GIT_REQUESTS++ % 20 == 0) { 
-				TimeUnit.MINUTES.sleep(1);
+			if ((ProjectSelector.gitRequests++ % 20) == 0) {
+				try {
+					TimeUnit.MINUTES.sleep(1);
+				} catch (final InterruptedException e) {
+					throw new IOException("Couldn't read release commits due to interruption at waiting.", e);
+				}
 			}
 			// Respect 30 request limit of GitHub API
 
-			String gitURL = "https://api.github.com/repos/" + vendorName + "/" + productName + "/tags?page=" + i
+			final String gitURL = "https://api.github.com/repos/" + vendorName + "/" + productName + "/tags?page=" + i
 					+ "&per_page=100";
 
-			HttpGet request = new HttpGet(gitURL);
+			final HttpGet request = new HttpGet(gitURL);
 			request.addHeader("Authorization", "Token " + ProjectSelector.oAuthToken);
 			request.addHeader("content-type", "application/json");
 
-			HttpResponse result = httpClient.execute(request);
-			String json = EntityUtils.toString(result.getEntity(), "UTF-8");
-			JsonArray jarray = new JsonParser().parse(json).getAsJsonArray();
+			final HttpResponse result = httpClient.execute(request);
+			final String json = EntityUtils.toString(result.getEntity(), "UTF-8");
+			final JsonArray jarray = new JsonParser().parse(json).getAsJsonArray();
 
 			if (jarray.size() != 0) {
 
 				// Iterate over the project releases on the page
 				for (int j = 0; j < jarray.size(); j++) {
 
-					JsonObject commit = new JsonObject();
-					JsonObject jo = (JsonObject) jarray.get(j);
+					final JsonObject commit = new JsonObject();
+					final JsonObject jo = (JsonObject) jarray.get(j);
 
-					commit.addProperty("commitId",
-							jo.get("commit").getAsJsonObject().get("sha").toString().replace("\"", ""));
-					String version = jo.get("name").toString().replace("\"", "");
-					commit.addProperty("version", version);
+					commit.addProperty(COMMIT_ID,
+							jo.get(COMMIT).getAsJsonObject().get("sha").toString().replace("\"", ""));
+					final String version = jo.get(NAME).toString().replace("\"", "");
+					commit.addProperty(VERSION, version);
 					if (!version.toLowerCase()
 							.matches(".*(\\.|-|_|^)(snapshot|doc|pre|alpha|beta|rc|m|prototype)(?![a-z]).*")) {
 						commits.add(commit);
@@ -147,37 +159,37 @@ public class ProjectsOutputCreator {
 
 	@Test
 	public void testFindProjects() {
-		LOGGER.getRootLogger().setLevel(Level.ALL);
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		JsonObject resultJSON = new JsonObject();
-		JsonArray resultArray = new JsonArray();
-		resultJSON.add("projects", resultArray);
-		Set<Repository> reps = new ProjectSelector().searchForJavaRepositoryNames(MAX_PROJECTS);
-		for (Repository rep : reps) {
-			JsonObject projectJSON = createJson(rep);
+		Logger.getRootLogger().setLevel(Level.ALL);
+		final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		final JsonObject resultJSON = new JsonObject();
+		final JsonArray resultArray = new JsonArray();
+		resultJSON.add(PROJECTS, resultArray);
+		final Set<Repository> reps = new ProjectSelector().searchForJavaRepositoryNames(MAX_PROJECTS);
+		for (final Repository rep : reps) {
+			final JsonObject projectJSON = createJson(rep);
 			if (((JsonArray) projectJSON.get("commits")).size() > 0) {
 				resultArray.add(projectJSON);
 			}
 		}
 		try (FileWriter fileWriter = new FileWriter(PROJECTS_DATA_OUTPUT_FILE)) {
 			fileWriter.write(gson.toJson(resultJSON));
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			LOGGER.log(Level.ERROR, e.getMessage(), e);
 		}
 	}
 
-	private JsonObject createJson(Repository rep) {
-		JsonObject projectJSON = new JsonObject();
-		String URL = "http://www.github.com/" + rep.getVendor() + "/" + rep.getProduct() + ".git";
+	private JsonObject createJson(final Repository rep) {
+		final JsonObject projectJSON = new JsonObject();
+		final String URL = "http://www.github.com/" + rep.getVendor() + "/" + rep.getProduct() + ".git";
 		projectJSON.addProperty("productName", rep.getProduct());
 		projectJSON.addProperty("vendorName", rep.getVendor());
 		projectJSON.addProperty("url", URL);
-		CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+		final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 		JsonArray commits;
 		try {
 			commits = getReleaseCommits(httpClient, rep.getVendor(), rep.getProduct());
 			projectJSON.add("commits", commits);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			LOGGER.log(Level.ERROR, e.getMessage(), e);
 			projectJSON.add("commits", new JsonArray());
 		}
@@ -186,26 +198,26 @@ public class ProjectsOutputCreator {
 
 	// @Test
 	public void cleanUpProjectVersions() {
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 		// Reading the unnormalized file
 		try (JsonReader reader = new JsonReader(new FileReader(PROJECTS_DATA_OUTPUT_FILE))) {
-			JsonObject jsonTree = gson.fromJson(reader, JsonObject.class);
+			final JsonObject jsonTree = gson.fromJson(reader, JsonObject.class);
 			// Getting all the projects
-			JsonArray projects = jsonTree.get("projects").getAsJsonArray();
+			final JsonArray projects = jsonTree.get("projects").getAsJsonArray();
 
 			// Setting up the normalized file
-			JsonObject resultJSON = new JsonObject();
-			JsonArray resultArray = new JsonArray();
+			final JsonObject resultJSON = new JsonObject();
+			final JsonArray resultArray = new JsonArray();
 			resultJSON.add("projects", resultArray);
 
 			// Iterate the unnormalized file
 			for (int i = 0; i < projects.size(); i++) {
 				// Get a project
-				JsonObject jo = (JsonObject) projects.get(i);
+				final JsonObject jo = (JsonObject) projects.get(i);
 
 				// Create a project object for the new file
-				JsonObject projectJSON = new JsonObject();
+				final JsonObject projectJSON = new JsonObject();
 
 				// Set the new properties
 				projectJSON.addProperty("productName", jo.get("productName").getAsString());
@@ -213,16 +225,16 @@ public class ProjectsOutputCreator {
 				projectJSON.addProperty("url", jo.get("url").getAsString());
 
 				// New commit data
-				JsonArray newCommits = new JsonArray();
+				final JsonArray newCommits = new JsonArray();
 				projectJSON.add("commits", newCommits);
 
-				JsonArray commits = jo.get("commits").getAsJsonArray();
+				final JsonArray commits = jo.get("commits").getAsJsonArray();
 
 				for (int j = 0; j < commits.size(); j++) {
-					JsonObject commitAndVersion = (JsonObject) commits.get(j);
+					final JsonObject commitAndVersion = (JsonObject) commits.get(j);
 
 					// Get version
-					String version = commitAndVersion.get("version").getAsString();
+					String version = commitAndVersion.get(VERSION).getAsString();
 
 					// Normalize the version
 					version = version.toLowerCase();
@@ -238,9 +250,9 @@ public class ProjectsOutputCreator {
 						while (m.find()) {
 							version = m.group();
 							version = version.replaceAll("(_|-)", ".");
-							JsonObject newCommit = new JsonObject();
-							newCommit.addProperty("commitId", commitAndVersion.get("commitId").getAsString());
-							newCommit.addProperty("version", version);
+							final JsonObject newCommit = new JsonObject();
+							newCommit.addProperty(COMMIT_ID, commitAndVersion.get(COMMIT_ID).getAsString());
+							newCommit.addProperty(VERSION, version);
 
 							newCommits.add(newCommit);
 						}
@@ -254,17 +266,21 @@ public class ProjectsOutputCreator {
 					resultArray.add(projectJSON);
 				}
 
-				// Write the new file
-				FileUtils.createDirectory("Resources");
-				try (FileWriter fileWriter = new FileWriter(PROJECTS_DATA_OUTPUT_FILE_NORMALIZED)) {
-					fileWriter.write(gson.toJson(resultJSON));
-				} catch (Exception e) {
-					LOGGER.log(Level.ERROR, "Couldn't write normalized file", e);
-				}
+				write(gson, resultJSON);
 
 			}
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			LOGGER.log(Level.ERROR, "Could not read old projects output file", e);
+		}
+	}
+
+	private void write(final Gson gson, final JsonObject resultJSON) {
+		// Write the new file
+		FileUtils.createDirectory("Resources");
+		try (FileWriter fileWriter = new FileWriter(PROJECTS_DATA_OUTPUT_FILE_NORMALIZED)) {
+			fileWriter.write(gson.toJson(resultJSON));
+		} catch (final Exception e) {
+			LOGGER.log(Level.ERROR, "Couldn't write normalized file", e);
 		}
 	}
 }

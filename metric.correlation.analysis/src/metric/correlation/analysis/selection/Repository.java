@@ -1,4 +1,4 @@
-package metric.correlation.analysis.projectSelection;
+package metric.correlation.analysis.selection;
 
 /**
  * @author Antoniya Ivanova Represents a GitHub repository.
@@ -7,20 +7,20 @@ package metric.correlation.analysis.projectSelection;
 
 public class Repository {
 
-	private String vendor;
-	private String product;
-	private int stars;
-	private int openIssues;
+	private final String vendor;
+	private final String product;
+	private final int stars;
+	private final int openIssues;
 
 	/**
 	 * Build a new GitHub repository representation with
-	 * 
+	 *
 	 * @param vendor     - the Vendor
 	 * @param product    - the Repository/Product name
 	 * @param stars      - the number of stars it has
 	 * @param openIssues - number of open issues
 	 */
-	public Repository(String vendor, String product, int stars, int openIssues) {
+	public Repository(final String vendor, final String product, final int stars, final int openIssues) {
 		this.vendor = vendor;
 		this.product = product;
 		this.stars = stars;
@@ -28,37 +28,40 @@ public class Repository {
 	}
 
 	public String getVendor() {
-		return vendor;
+		return this.vendor;
 	}
 
 	public String getProduct() {
-		return product;
+		return this.product;
 	}
 
 	public int getStars() {
-		return stars;
+		return this.stars;
 	}
 
 	public int getOpenIssues() {
-		return openIssues;
+		return this.openIssues;
 	}
 
 	@Override
 	public int hashCode() {
-		return vendor.hashCode() ^ product.hashCode() ^ ((int) stars);
+		return this.vendor.hashCode() ^ this.product.hashCode() ^ (this.stars);
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (obj == null)
+	public boolean equals(final Object obj) {
+		if (obj == null) {
 			return false;
-		if (!(obj instanceof Repository))
+		}
+		if (!(obj instanceof Repository)) {
 			return false;
-		if (obj == this)
+		}
+		if (obj == this) {
 			return true;
-		return this.getVendor().equals(((Repository) obj).getVendor())
-				&& this.getProduct().equals(((Repository) obj).getProduct())
-				&& this.getStars() == ((Repository) obj).getStars();
+		}
+		return getVendor().equals(((Repository) obj).getVendor())
+				&& getProduct().equals(((Repository) obj).getProduct())
+				&& (getStars() == ((Repository) obj).getStars());
 	}
 
 	@Override

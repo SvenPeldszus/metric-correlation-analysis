@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.apache.commons.io.FilenameUtils;
@@ -34,13 +35,15 @@ import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
 
 /**
- * contains helper methods for dealing with the mongoDB and metrics 
+ * contains helper methods for dealing with the mongoDB and metrics
  * [TODO:] richtiges ORM verwenden
- * 
+ *
  * @author Stefan Thießen
  *
  */
 public class MongoDBHelper implements AutoCloseable {
+
+	private static final String CLASS = "class";
 
 	private static final Logger LOGGER = Logger.getLogger(MongoDBHelper.class);
 
@@ -51,23 +54,23 @@ public class MongoDBHelper implements AutoCloseable {
 	public static final String CLASS_COLLECTION = "class-metrics";
 	public static final String MONGOD = "MONGOD";
 	// keys to identify a projects metric results
-	private List<String> projectKeys = Arrays.asList("version", "product", "vendor");
+	private final List<String> projectKeys = Arrays.asList("version", "product", "vendor");
 
 	private MongoCollection<Document> dbCollection;
-	private MongoClient client;
-	private String databaseName;
-	private String collectionName;
+	private final MongoClient client;
+	private final String databaseName;
+	private final String collectionName;
 	static Process mongodProcess;
 
 	public MongoDBHelper() {
 		this(DEFAULT_DATABASE, DEFAULT_COLLECTION);
 	}
 
-	public MongoDBHelper(String databaseName, String collectionName) {
+	public MongoDBHelper(final String databaseName, final String collectionName) {
 		this.databaseName = databaseName;
 		this.collectionName = collectionName;
-		client = new MongoClient(new MongoClientURI(SERVER_URI));
-		dbCollection = client.getDatabase(databaseName).getCollection(collectionName);
+		this.client = new MongoClient(new MongoClientURI(SERVER_URI));
+		this.dbCollection = this.client.getDatabase(databaseName).getCollection(collectionName);
 	}
 
 	/**
@@ -75,17 +78,17 @@ public class MongoDBHelper implements AutoCloseable {
 	 */
 	public static void startServer() {
 		if (available(DEFAULT_PORT)) {
-			String config = findConfig();
-			List<String> args = config == null ? null : Arrays.asList("--config", config);
+			final String config = findConfig();
+			final List<String> args = config == null ? null : Arrays.asList("--config", config);
 			try {
 				mongodProcess = Execute.run(getMongoDBFolder(), "mongod", args, null);
 				Thread.sleep(5000); // give the server time to start
 				if (available(DEFAULT_PORT)) {
-					String msg = Execute.collectMessages(mongodProcess).toString();
+					final String msg = Execute.collectMessages(mongodProcess).toString();
 					LOGGER.warn(msg);
 					throw new IllegalStateException();
 				}
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				LOGGER.log(Level.ERROR, "COULD NOT START THE MONGODB SERVER");
 				LOGGER.error(e.getStackTrace());
 			}
@@ -94,101 +97,101 @@ public class MongoDBHelper implements AutoCloseable {
 
 	/**
 	 * store the (key, value) pairs as metrics in the database
-	 * 
+	 *
 	 * @param metrics keys and values of the metrics
 	 */
-	public void storeMetrics(Map<String, String> metrics, boolean classMetric) {
-		Document filter = new Document();
-		projectKeys.stream().forEach(key -> filter.append(key, metrics.get(key)));
+	public void storeMetrics(final Map<String, String> metrics, final boolean classMetric) {
+		final Document filter = new Document();
+		this.projectKeys.stream().forEach(key -> filter.append(key, metrics.get(key)));
 		if (classMetric) {
-			filter.append("class", metrics.get("class"));
+			filter.append(CLASS, metrics.get(CLASS));
 		}
-		Document doc = new Document();
+		final Document doc = new Document();
 		metrics.entrySet().stream().forEach(entry -> doc.append(entry.getKey(), entry.getValue()));
-		Document updateDoc = new Document();
+		final Document updateDoc = new Document();
 		updateDoc.put("$set", doc);
-		UpdateOptions options = new UpdateOptions();
+		final UpdateOptions options = new UpdateOptions();
 		options.upsert(true);
-		dbCollection.updateOne(filter, updateDoc, options);
+		this.dbCollection.updateOne(filter, updateDoc, options);
 	}
 
-	public void storeMetrics(List<Map<String, String>> metricsList, boolean classMetrics) {
-		for (Map<String, String> metrics : metricsList) {
+	public void storeMetrics(final List<Map<String, String>> metricsList, final boolean classMetrics) {
+		for (final Map<String, String> metrics : metricsList) {
 			storeMetrics(metrics, classMetrics);
 		}
 	}
 
 	/**
 	 * get all metrics from projects that fit the given
-	 * 
+	 *
 	 * @param filterMap filter values (e.g. version and product), can be more
 	 *                  complicated like lloc > 100,000
 	 * @return list of all metrics from projects that matched the filter
 	 */
-	public List<Map<String, String>> getMetrics(Map<String, Object> filterMap) {
-		List<Map<String, String>> results = new LinkedList<>();
-		Document filter = new Document(filterMap);
-		for (Document d : dbCollection.find(filter)) {
-			Map<String, String> next = new HashMap<>();
+	public List<Map<String, String>> getMetrics(final Map<String, Object> filterMap) {
+		final List<Map<String, String>> results = new LinkedList<>();
+		final Document filter = new Document(filterMap);
+		for (final Document d : this.dbCollection.find(filter)) {
+			final Map<String, String> next = new HashMap<>();
 			d.entrySet().stream().filter(entry -> !(entry.getKey().equals("_id")))
-					.forEach(entry -> next.put(entry.getKey(), (String) entry.getValue()));
+			.forEach(entry -> next.put(entry.getKey(), (String) entry.getValue()));
 			results.add(next);
 		}
 		return results;
 	}
 
-	public List<Document> sampleDocs(String[] types, int size) {
-		List<Document> result = new ArrayList<>();
-		List<Bson> filterList = new ArrayList<>();
-		for (String s : types) {
+	public List<Document> sampleDocs(final String[] types, final int size) {
+		final List<Document> result = new ArrayList<>();
+		final List<Bson> filterList = new ArrayList<>();
+		for (final String s : types) {
 			filterList.add(eq("type", s));
 		}
-		AggregateIterable<Document> docs = dbCollection.aggregate(Arrays.asList(match(or(filterList)), sample(size)));
-		for (Document doc : docs) {
+		final AggregateIterable<Document> docs = this.dbCollection.aggregate(Arrays.asList(match(or(filterList)), sample(size)));
+		for (final Document doc : docs) {
 			result.add(doc);
 		}
 		return result;
 	}
 
-	public long delete(List<Document> docs) {
-		List<ObjectId> ids = new ArrayList<>();
-		for (Document doc : docs) {
+	public long delete(final List<Document> docs) {
+		final List<ObjectId> ids = new ArrayList<>();
+		for (final Document doc : docs) {
 			ids.add((ObjectId) doc.get("_id"));
 		}
-		DeleteResult result = dbCollection.deleteMany(Filters.in("_id", ids));
+		final DeleteResult result = this.dbCollection.deleteMany(Filters.in("_id", ids));
 		return result.getDeletedCount();
 	}
 
-	public void storeData(Map<String, String> data) {
-		Document doc = new Document();
+	public void storeData(final Map<String, String> data) {
+		final Document doc = new Document();
 		data.entrySet().stream().forEach(entry -> doc.append(entry.getKey(), entry.getValue()));
-		dbCollection.insertOne(doc);
+		this.dbCollection.insertOne(doc);
 	}
 
-	public void storeMany(List<Map<String, Object>> dataList) {
-		List<Document> docs = new LinkedList<>();
-		for (Map<String, Object> data : dataList) {
-			Document doc = new Document();
+	public void storeMany(final List<Map<String, Object>> dataList) {
+		final List<Document> docs = new LinkedList<>();
+		for (final Map<String, Object> data : dataList) {
+			final Document doc = new Document();
 			data.entrySet().stream().forEach(entry -> doc.append(entry.getKey(), entry.getValue()));
 			docs.add(doc);
 		}
-		dbCollection.insertMany(docs);
+		this.dbCollection.insertMany(docs);
 	}
 
-	public void addDocuments(List<Document> docs) {
-		dbCollection.insertMany(docs);
+	public void addDocuments(final List<Document> docs) {
+		this.dbCollection.insertMany(docs);
 	}
 
 	public void cleanCollection() {
-		dbCollection.drop();
-		client.getDatabase(databaseName).createCollection(collectionName);
-		dbCollection = client.getDatabase(databaseName).getCollection(collectionName);
+		this.dbCollection.drop();
+		this.client.getDatabase(this.databaseName).createCollection(this.collectionName);
+		this.dbCollection = this.client.getDatabase(this.databaseName).getCollection(this.collectionName);
 	}
 
-	public List<Document> getDocuments(Map<String, Object> filterMap) {
-		Document filter = new Document(filterMap);
-		List<Document> result = new ArrayList<>();
-		for (Document doc : dbCollection.find(filter)) {
+	public List<Document> getDocuments(final Map<String, Object> filterMap) {
+		final Document filter = new Document(filterMap);
+		final List<Document> result = new ArrayList<>();
+		for (final Document doc : this.dbCollection.find(filter)) {
 			result.add(doc);
 		}
 		return result;
@@ -199,18 +202,18 @@ public class MongoDBHelper implements AutoCloseable {
 	 */
 	@Override
 	public void close() {
-		client.close();
+		this.client.close();
 	}
 
 	/**
 	 * shuts down the database, you should close all clients before calling this
 	 */
 	public static void shutdownDatabase() {
-		Document shutdownDoc = new Document();
+		final Document shutdownDoc = new Document();
 		shutdownDoc.append("shutdown", 1);
 		try (MongoClient shutdownClient = new MongoClient(new MongoClientURI(SERVER_URI))) {
 			shutdownClient.getDatabase("admin").runCommand(shutdownDoc);
-		} catch (MongoSocketReadException e) { // the shutdown always throws an exception but works
+		} catch (final MongoSocketReadException e) { // the shutdown always throws an exception but works
 			LOGGER.log(Level.INFO, "Shutdown mongodb server");
 		}
 
@@ -219,12 +222,12 @@ public class MongoDBHelper implements AutoCloseable {
 	/**
 	 * if the config file is not set as parameter, mondodb will choose default
 	 * values and ignore .cfg files in the folder
-	 * 
+	 *
 	 * @return absolute location of the config file, if present
 	 */
 	private static String findConfig() {
-		File mongodParent = getMongoDBFolder();
-		Optional<File> configOpt = Arrays.stream(mongodParent.listFiles())
+		final File mongodParent = getMongoDBFolder();
+		final Optional<File> configOpt = Arrays.stream(mongodParent.listFiles())
 				.filter(f -> FilenameUtils.getExtension(f.getName()).equals("cfg")).findFirst();
 		if (configOpt.isPresent()) {
 			return configOpt.get().getName();
@@ -234,7 +237,7 @@ public class MongoDBHelper implements AutoCloseable {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return absolute path of mongodb folder
 	 */
 	private static File getMongoDBFolder() {
@@ -243,27 +246,27 @@ public class MongoDBHelper implements AutoCloseable {
 
 	/**
 	 * checks if the port is available
-	 * 
+	 *
 	 * @param port port to check
 	 * @return true if port is not in use
 	 */
-	private static boolean available(int port) {
+	private static boolean available(final int port) {
 		try (Socket ignored = new Socket("localhost", port)) {
 			return false;
-		} catch (IOException ignored) {
+		} catch (final IOException ignored) {
 			return true;
 		}
 	}
 
 	// THIS IS REALLY INEFFICIENT, MAYBE OPTIMIZE
-	public void storeClassMetrics(String productName, String vendorName, String version,
-			Map<String, Map<String, String>> classResults) {
-		for (String className : classResults.keySet()) {
-			Map<String, String> fullDataMap = new HashMap<>(classResults.get(className));
+	public void storeClassMetrics(final String productName, final String vendorName, final String version,
+			final Map<String, Map<String, String>> classResults) {
+		for (final Entry<String, Map<String, String>> entry : classResults.entrySet()) {
+			final Map<String, String> fullDataMap = new HashMap<>(entry.getValue());
 			fullDataMap.put("product", productName);
 			fullDataMap.put("vendor", vendorName);
 			fullDataMap.put("version", version);
-			fullDataMap.put("class", className);
+			fullDataMap.put(CLASS, entry.getKey());
 			storeMetrics(fullDataMap, true);
 		}
 

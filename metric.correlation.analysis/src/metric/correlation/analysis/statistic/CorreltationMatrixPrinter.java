@@ -16,6 +16,10 @@ public class CorreltationMatrixPrinter {
 
 	private static final Logger LOGGER = Logger.getLogger(CorreltationMatrixPrinter.class);
 
+	private CorreltationMatrixPrinter() {
+		// This class only provides static methods and should not be instantiated
+	}
+	
 	/**
 	 * 
 	 * @param matrix

@@ -21,7 +21,7 @@ public class GitVersionTest {
 
 	@Before
 	public void cloneRepo() {
-		if(PATH.exists()) {
+		if (PATH.exists()) {
 			FileUtils.recursiveDelete(PATH);
 		}
 		try {
@@ -30,17 +30,18 @@ public class GitVersionTest {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Test
 	public void testChange() throws InvalidRemoteException, TransportException, GitAPIException, IOException {
-		if(!PATH.exists()) {
+		if (!PATH.exists()) {
 			// Skip test
 			return;
 		}
 		String id = "b51fa17fc6a750a17436f9f38c139a7b5228171f";
-		Git git = Git.open(PATH);
-		git.reset().setMode(ResetType.HARD).setRef(id).call();
-		assertFalse(git.status().call().hasUncommittedChanges());
-				
+		try (Git git = Git.open(PATH)) {
+			git.reset().setMode(ResetType.HARD).setRef(id).call();
+			assertFalse(git.status().call().hasUncommittedChanges());
+		}
+
 	}
 }

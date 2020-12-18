@@ -1,4 +1,4 @@
-package metric.correlation.analysis.projectSelection;
+package metric.correlation.analysis.selection;
 
 public class GradleGithubProjectSelector extends FileBasedGithubprojectSelector {
 

@@ -1,5 +1,12 @@
 package metric.correlation.analysis.calculation.impl;
 
+import static metric.correlation.analysis.calculation.impl.HulkMetrics.MetricKeysImpl.BLOB;
+import static metric.correlation.analysis.calculation.impl.HulkMetrics.MetricKeysImpl.DIT;
+import static metric.correlation.analysis.calculation.impl.HulkMetrics.MetricKeysImpl.IGAM;
+import static metric.correlation.analysis.calculation.impl.HulkMetrics.MetricKeysImpl.IGAT;
+import static metric.correlation.analysis.calculation.impl.HulkMetrics.MetricKeysImpl.LCOM5;
+import static metric.correlation.analysis.calculation.impl.HulkMetrics.MetricKeysImpl.VISIBILITY;
+
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -18,7 +25,6 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jdt.core.IJavaProject;
-
 import org.gravity.hulk.HulkAPI;
 import org.gravity.hulk.HulkAPI.AntiPatternNames;
 import org.gravity.hulk.antipatterngraph.HAnnotation;
@@ -34,7 +40,6 @@ import org.gravity.tgg.modisco.pm.MoDiscoTGGActivator;
 import org.gravity.typegraph.basic.TypeGraph;
 
 import metric.correlation.analysis.calculation.IMetricCalculator;
-import static metric.correlation.analysis.calculation.impl.HulkMetrics.MetricKeysImpl.*;
 
 public class HulkMetrics implements IMetricCalculator {
 
@@ -56,36 +61,36 @@ public class HulkMetrics implements IMetricCalculator {
 	}
 
 	@Override
-	public boolean calculateMetric(IJavaProject project, String productName, String vendorName, String version,
+	public boolean calculateMetric(final IJavaProject project, final String productName, final String vendorName, final String version,
 			final Map<String, String> map) {
 		try {
 			cleanResults();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			LOGGER.warn("Cleaning previous results failed: " + e.getMessage(), e);
 		}
 		try {
-			results = HulkAPI.detect(project, new NullProgressMonitor(), AntiPatternNames.BLOB, AntiPatternNames.IGAM,
+			this.results = HulkAPI.detect(project, new NullProgressMonitor(), AntiPatternNames.BLOB, AntiPatternNames.IGAM,
 					AntiPatternNames.IGAT, AntiPatternNames.DIT, AntiPatternNames.LCOM5,
 					AntiPatternNames.TOTAL_METHOD_VISIBILITY);
-		} catch (DetectionFailedException e) {
+		} catch (final DetectionFailedException e) {
 			LOGGER.log(Level.ERROR, e.getMessage(), e);
 			return false;
 		}
-		ok = true;
+		this.ok = true;
 		return true;
 	}
 
 	private void cleanResults() throws IOException {
-		if (results == null) {
+		if (this.results == null) {
 			return;
 		}
-		Set<Resource> resources = new HashSet<>();
-		for (HAnnotation metric : results) {
+		final Set<Resource> resources = new HashSet<>();
+		for (final HAnnotation metric : this.results) {
 			resources.add(metric.eResource());
 		}
-		results.clear();
-		results = null;
-		for (Resource resource : resources) {
+		this.results.clear();
+		this.results = null;
+		for (final Resource resource : resources) {
 			resource.delete(Collections.emptyMap());
 		}
 		resources.clear();
@@ -94,20 +99,19 @@ public class HulkMetrics implements IMetricCalculator {
 	@Override
 	public LinkedHashMap<String, String> getResults() {
 
-		LinkedHashMap<String, String> metrics = new LinkedHashMap<>();
+		final LinkedHashMap<String, String> metrics = new LinkedHashMap<>();
 		double igam = 0.0;
 		double igat = 0.0;
 		double vis = 0.0;
 		double lcom = 0.0;
 		double dit = 0.0;
 
-
-		if (!ok) {
+		if (!this.ok) {
 			throw new IllegalStateException("The metrics haven't been calculated successfully!");
 		}
 		double blob = 0.0;
 
-		for (HAnnotation annoatation : results) {
+		for (final HAnnotation annoatation : this.results) {
 
 			if (annoatation instanceof HBlobAntiPattern) {
 				// We count all blobs
@@ -123,14 +127,11 @@ public class HulkMetrics implements IMetricCalculator {
 				} else if (annoatation instanceof HIGATMetric) {
 					igat = ((HMetric) annoatation).getValue();
 					LOGGER.log(Level.INFO, "IGAT = " + igat);
-				}
-				else if (annoatation instanceof HTotalVisibilityMetric) {
+				} else if (annoatation instanceof HTotalVisibilityMetric) {
 					vis = ((HMetric) annoatation).getValue();
-				}
-				else if (annoatation instanceof HLCOM5Metric) {
+				} else if (annoatation instanceof HLCOM5Metric) {
 					lcom = ((HMetric) annoatation).getValue();
-				}
-				else if (annoatation instanceof HDepthOfInheritanceMetric) {
+				} else if (annoatation instanceof HDepthOfInheritanceMetric) {
 					dit = ((HMetric) annoatation).getValue();
 				}
 			}
@@ -140,16 +141,16 @@ public class HulkMetrics implements IMetricCalculator {
 		metrics.put(IGAM.toString(), roundDouble(igam));
 		metrics.put(IGAT.toString(), roundDouble(igat));
 		metrics.put(VISIBILITY.toString(), roundDouble(vis));
-//		metrics.put(DIT.toString(), roundDouble(dit));
-//		metrics.put(LCOM5.toString(), roundDouble(lcom));
+		metrics.put(DIT.toString(), roundDouble(dit));
+		metrics.put(LCOM5.toString(), roundDouble(lcom));
 
 		return metrics;
 	}
 
-	private String roundDouble(double d) {
-		DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance();
+	private String roundDouble(final double d) {
+		final DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance();
 		dfs.setDecimalSeparator('.');
-		DecimalFormat dFormat = new DecimalFormat("0.00", dfs);
+		final DecimalFormat dFormat = new DecimalFormat("0.00", dfs);
 
 		return dFormat.format(d);
 	}
@@ -161,24 +162,23 @@ public class HulkMetrics implements IMetricCalculator {
 
 	/**
 	 * The keys of the Hulk metrics
-	 * 
+	 *
 	 * @author speldszus
 	 *
 	 */
 	public enum MetricKeysImpl {
-		BLOB("BLOB-Antipattern"), IGAM("IGAM"), IGAT("IGAT"), VISIBILITY("TotalMethodVisibility")
-//		, LCOM5("HulkLCOM5"), DIT("HulkDIT")
-		;
+		BLOB("BLOB-Antipattern"), IGAM("IGAM"), IGAT("IGAT"), VISIBILITY("TotalMethodVisibility"), LCOM5("HulkLCOM5"),
+		DIT("HulkDIT");
 
 		private String value;
 
-		private MetricKeysImpl(String value) {
+		MetricKeysImpl(final String value) {
 			this.value = value;
 		}
 
 		@Override
 		public String toString() {
-			return value;
+			return this.value;
 		}
 	}
 }

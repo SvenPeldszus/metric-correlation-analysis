@@ -2,15 +2,16 @@ package metric.correlation.analysis.issues;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.log4j.Logger;
 
 import metric.correlation.analysis.issues.Issue.IssueType;
 import opennlp.tools.doccat.BagOfWordsFeatureGenerator;
@@ -30,17 +31,22 @@ import opennlp.tools.util.model.ModelUtil;
 
 public class NLPClassifier implements Classifier {
 
+	/**
+	 * The logger of this class
+	 */
+	private static final Logger LOGGER = Logger.getLogger(NLPClassifier.class);
+
 	private static final String BUG_TRAINING_PATH = "input/trainBugs.txt";
 	private static final String SECURITY_TRAINING_PATH = "input/trainSecurity.txt";
 	private static final String BUG_CLASSIFIER_PATH = "input/catBugs.bin";
 	private static final String SECURITY_CLASSIFIER_PATH = "input/catSec.bin";
-	private Map<IssueType, String> bugMap = new HashMap<>();
-	private Map<IssueType, String> securityMap = new HashMap<>();
+	private final Map<IssueType, String> bugMap = new EnumMap<>(IssueType.class);
+	private final Map<IssueType, String> securityMap = new EnumMap<>(IssueType.class);
 	private DocumentCategorizerME bugCategorizer;
 	private DocumentCategorizerME securityCategorizer;
 
 	/**
-	 * NOTE: creating the class will already load the model for higher performance, if you train a new model 
+	 * NOTE: creating the class will already load the model for higher performance, if you train a new model
 	 * you need to call init before it will be used
 	 */
 	public NLPClassifier() {
@@ -50,40 +56,40 @@ public class NLPClassifier implements Classifier {
 	public void init() {
 		initMaps();
 		try (InputStream modelIn = new FileInputStream(BUG_CLASSIFIER_PATH)) {
-			DoccatModel me = new DoccatModel(modelIn);
-			bugCategorizer = new DocumentCategorizerME(me);
-		} catch (Exception e) {
-
+			final DoccatModel me = new DoccatModel(modelIn);
+			this.bugCategorizer = new DocumentCategorizerME(me);
+		} catch (final Exception e) {
+			LOGGER.error(e.getMessage(), e);
 		}
 		try (InputStream modelIn = new FileInputStream(SECURITY_CLASSIFIER_PATH)) {
-			DoccatModel me = new DoccatModel(modelIn);
-			securityCategorizer = new DocumentCategorizerME(me);
-		} catch (Exception e) {
-
+			final DoccatModel me = new DoccatModel(modelIn);
+			this.securityCategorizer = new DocumentCategorizerME(me);
+		} catch (final Exception e) {
+			LOGGER.error(e.getMessage(), e);
 		}
 	}
 
 	private void initMaps() {
-		bugMap.put(IssueType.BUG, "BUG");
-		bugMap.put(IssueType.SECURITY_BUG, "BUG");
-		bugMap.put(IssueType.FEATURE_REQUEST, "NOBUG");
-		bugMap.put(IssueType.SECURITY_REQUEST, "NOBUG");
-		securityMap.put(IssueType.SECURITY_BUG, "SEC");
-		securityMap.put(IssueType.SECURITY_REQUEST, "SEC");
-		securityMap.put(IssueType.BUG, "NOSEC");
-		securityMap.put(IssueType.FEATURE_REQUEST, "NOSEC");
+		this.bugMap.put(IssueType.BUG, "BUG");
+		this.bugMap.put(IssueType.SECURITY_BUG, "BUG");
+		this.bugMap.put(IssueType.FEATURE_REQUEST, "NOBUG");
+		this.bugMap.put(IssueType.SECURITY_REQUEST, "NOBUG");
+		this.securityMap.put(IssueType.SECURITY_BUG, "SEC");
+		this.securityMap.put(IssueType.SECURITY_REQUEST, "SEC");
+		this.securityMap.put(IssueType.BUG, "NOSEC");
+		this.securityMap.put(IssueType.FEATURE_REQUEST, "NOSEC");
 	}
 
 	@Override
-	public IssueType classify(Issue issue) {
-		boolean bug = false;
-		boolean sec = false;
-		String text = issue.getTitle() + " " + issue.getBody() + getComments(issue);
-		String[] words = preProcess(text);
-		double[] outcomesBug = bugCategorizer.categorize(words);
-		String categoryBug = bugCategorizer.getBestCategory(outcomesBug);
-		double[] outcomesSec = securityCategorizer.categorize(words);
-		String categorySec = securityCategorizer.getBestCategory(outcomesSec);
+	public IssueType classify(final Issue issue) {
+		boolean bug;
+		boolean sec;
+		final String text = issue.getTitle() + " " + issue.getBody() + getComments(issue);
+		final String[] words = preProcess(text);
+		final double[] outcomesBug = this.bugCategorizer.categorize(words);
+		final String categoryBug = this.bugCategorizer.getBestCategory(outcomesBug);
+		final double[] outcomesSec = this.securityCategorizer.categorize(words);
+		final String categorySec = this.securityCategorizer.getBestCategory(outcomesSec);
 		bug = categoryBug.equals("BUG");
 		sec = categorySec.equals("SEC");
 		if (bug && sec) {
@@ -101,17 +107,16 @@ public class NLPClassifier implements Classifier {
 
 	private String[] preProcess(String text) {
 		text = cleanText(text);
-		String[] words = text.split(" ");
-		List<String> wordList = new ArrayList<>();
-		for (int i = 0; i < words.length; i++) {
-			String next = words[i];
+		final String[] words = text.split(" ");
+		final List<String> wordList = new ArrayList<>();
+		for (final String next : words) {
 			if (next.length() >= 3) {
 				wordList.add(next);
 			} else {
-				wordList.add(words[i]);
+				wordList.add(next);
 			}
 		}
-		return (String[]) wordList.toArray(new String[] {});
+		return wordList.toArray(new String[] {});
 
 	}
 
@@ -121,15 +126,15 @@ public class NLPClassifier implements Classifier {
 
 	}
 
-	private void createTrainingFile(List<Issue> issues, String path, Map<IssueType, String> cats) {
+	private void createTrainingFile(final List<Issue> issues, final String path, final Map<IssueType, String> cats) {
 		try (FileWriter fw = new FileWriter(new File(path))) {
-			for (Issue issue : issues) {
-				String[] tokens = preProcess(issue.getTitle() + " " + issue.getBody() + getComments(issue));
-				StringBuilder sb = new StringBuilder();
-				for (String token : tokens) {
+			for (final Issue issue : issues) {
+				final String[] tokens = preProcess(issue.getTitle() + " " + issue.getBody() + getComments(issue));
+				final StringBuilder sb = new StringBuilder();
+				for (final String token : tokens) {
 					sb.append(token + " ");
 				}
-				String line = sb.toString();
+				final String line = sb.toString();
 				if (line.trim().isEmpty()) {
 					continue;
 				}
@@ -138,47 +143,43 @@ public class NLPClassifier implements Classifier {
 				fw.write("\r\n");
 			}
 
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	private String getComments(Issue issue) {
-		StringBuilder sb = new StringBuilder();
-		for (String comment : issue.getComments()) {
+	private String getComments(final Issue issue) {
+		final StringBuilder sb = new StringBuilder();
+		for (final String comment : issue.getComments()) {
 			sb.append(" " + comment);
 		}
 		return sb.toString();
 	}
 
-	private void createModel(String input, String output) {
+	private void createModel(final String input, final String output) {
 		InputStreamFactory inputStreamFactory;
 		ObjectStream<String> lineStream;
 		try {
 			inputStreamFactory = new MarkableFileInputStreamFactory(new File(input));
 			lineStream = new PlainTextByLineStream(inputStreamFactory, StandardCharsets.UTF_8);
-			ObjectStream<DocumentSample> sampleStream = new DocumentSampleStream(lineStream);
-			TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
+			final ObjectStream<DocumentSample> sampleStream = new DocumentSampleStream(lineStream);
+			final TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
 			params.put(TrainingParameters.ITERATIONS_PARAM, 500);
 			params.put(TrainingParameters.CUTOFF_PARAM, 1);
 			params.put(TrainingParameters.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
-			DoccatFactory factory = new DoccatFactory(new FeatureGenerator[] { new BagOfWordsFeatureGenerator() });
-			DoccatModel model = DocumentCategorizerME.train("en", sampleStream, params, factory);
+			final DoccatFactory factory = new DoccatFactory(new FeatureGenerator[] { new BagOfWordsFeatureGenerator() });
+			final DoccatModel model = DocumentCategorizerME.train("en", sampleStream, params, factory);
 			model.serialize(new File(output));
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		}catch (final IOException e) {
+			LOGGER.error(e.getMessage(), e);
 		}
 	}
 
 	@Override
-	public void train(List<Issue> issues) {
-		createTrainingFile(issues, BUG_TRAINING_PATH, bugMap);
-		createTrainingFile(issues, SECURITY_TRAINING_PATH, securityMap);
+	public void train(final List<Issue> issues) {
+		createTrainingFile(issues, BUG_TRAINING_PATH, this.bugMap);
+		createTrainingFile(issues, SECURITY_TRAINING_PATH, this.securityMap);
 		createModel(BUG_TRAINING_PATH, BUG_CLASSIFIER_PATH);
 		createModel(SECURITY_TRAINING_PATH, SECURITY_CLASSIFIER_PATH);
 		init();

@@ -31,14 +31,12 @@ import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.junit.Test;
 
 import metric.correlation.analysis.calculation.impl.IssueMetrics;
-//import metric.correlation.analysis.calculation.impl.HulkMetrics;
 import metric.correlation.analysis.calculation.impl.SourceMeterMetrics;
 import metric.correlation.analysis.calculation.impl.VersionMetrics;
 
@@ -51,11 +49,11 @@ public class StatisticExecuter {
 
 	private static final File RESULTS = new File("statistics");
 
-	public static void main(String[] args) {
-		StatisticExecuter executer = new StatisticExecuter();
+	public static void main(final String[] args) {
+		final StatisticExecuter executer = new StatisticExecuter();
 		try {
 			executer.calculateStatistics(DATA_FILE, new File(RESULTS, INPUT_SERIES));
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			LOGGER.log(Level.ERROR, e.getMessage(), e);
 		}
 	}
@@ -63,12 +61,12 @@ public class StatisticExecuter {
 	/**
 	 * Calculates correlations for the given metric values and saves them at the
 	 * given location
-	 * 
+	 *
 	 * @param in
 	 * @param out
 	 * @throws IOException
 	 */
-	public void calculateStatistics(File in, File out) throws IOException {
+	public void calculateStatistics(final File in, final File out) throws IOException {
 		if (!out.exists()) {
 			out.mkdirs();
 		}
@@ -78,53 +76,53 @@ public class StatisticExecuter {
 	/**
 	 * Calculates correlations for the given metric values and saves them at the
 	 * given location
-	 * 
+	 *
 	 * @param map The mapping from metric names to values
 	 * @param out The output file
 	 * @throws IOException
 	 */
-	public void calculateStatistics(final LinkedHashMap<String, List<Double>> map, File out) throws IOException {
+	public void calculateStatistics(final LinkedHashMap<String, List<Double>> map, final File out) throws IOException {
 		final Set<String> keySet = map.keySet();
 		final ArrayList<String> metricNames = new ArrayList<>(keySet);
 
-		RealMatrix matrix = createMatrix(map);
+		final RealMatrix matrix = createMatrix(map);
 
-//		RealMatrix pearsonMatrix = new PearsonsCorrelation().computeCorrelationMatrix(matrix);
-//		CorreltationMatrixPrinter.storeMatrix(pearsonMatrix, metricNames, new File(out, "PearsonCorrelationMatrix.csv"));
+		//		RealMatrix pearsonMatrix = new PearsonsCorrelation().computeCorrelationMatrix(matrix);
+		//		CorreltationMatrixPrinter.storeMatrix(pearsonMatrix, metricNames, new File(out, "PearsonCorrelationMatrix.csv"));
 
-		RealMatrix spearmanMatrix = new SpearmansCorrelation().computeCorrelationMatrix(matrix);
+		final RealMatrix spearmanMatrix = new SpearmansCorrelation().computeCorrelationMatrix(matrix);
 		CorreltationMatrixPrinter.storeMatrix(spearmanMatrix, metricNames,
 				new File(out, "SpearmanCorrelationMatrix.csv"));
 
-//	    XYSeries series = new XYSeries("Random");
-//	    for (int i = 0; i <= 100; i++) {
-//	        double x = r.nextDouble();
-//	        double y = r.nextDouble();
-//	        series.add(x, y);
-//	    }
-//	    result.addSeries(series);
-//	    return result;
+		//	    XYSeries series = new XYSeries("Random");
+		//	    for (int i = 0; i <= 100; i++) {
+		//	        double x = r.nextDouble();
+		//	        double y = r.nextDouble();
+		//	        series.add(x, y);
+		//	    }
+		//	    result.addSeries(series);
+		//	    return result;
 
 		for (int i = 0; i < keySet.size(); i++) {
 
-			String xMetric = metricNames.get(i);
-			List<Double> xValues = map.get(xMetric);
+			final String xMetric = metricNames.get(i);
+			final List<Double> xValues = map.get(xMetric);
 
 			for (int j = i + 1; j < keySet.size(); j++) {
-				String yMetric = metricNames.get(j);
-				List<Double> yValues = map.get(yMetric);
+				final String yMetric = metricNames.get(j);
+				final List<Double> yValues = map.get(yMetric);
 
-				XYSeriesCollection scatterPlotResult = new XYSeriesCollection();
-				XYSeries ySeries = new XYSeries(yMetric);
+				final XYSeriesCollection scatterPlotResult = new XYSeriesCollection();
+				final XYSeries ySeries = new XYSeries(yMetric);
 
 				for (int counter = 0; counter < xValues.size(); counter++) {
 					ySeries.add(xValues.get(counter), yValues.get(counter));
 				}
 
 				scatterPlotResult.addSeries(ySeries);
-				JFreeChart chart = ChartFactory.createScatterPlot((xMetric + " vs " + yMetric), xMetric, yMetric,
+				final JFreeChart chart = ChartFactory.createScatterPlot((xMetric + " vs " + yMetric), xMetric, yMetric,
 						scatterPlotResult);
-				BufferedImage chartImage = chart.createBufferedImage(600, 400);
+				final BufferedImage chartImage = chart.createBufferedImage(600, 400);
 				ImageIO.write(chartImage, "png",
 						new FileOutputStream(new File(out, xMetric + "vs" + yMetric + ".png")));
 			}
@@ -135,18 +133,18 @@ public class StatisticExecuter {
 
 	/**
 	 * Creates a map from a stored metric csv file
-	 * 
+	 *
 	 * @param dataFile The file
 	 * @return The map
 	 * @throws IOException If there is an exception reading the file
 	 */
-	private LinkedHashMap<String, List<Double>> getMetricMap(File dataFile) throws IOException {
-		List<String> lines = Files.readAllLines(dataFile.toPath());
-		String[] keys = lines.get(0).split(",");
-		LinkedHashMap<String, List<Double>> metrics = new LinkedHashMap<>(keys.length - 1);
-		Set<Integer> skipIndex = new HashSet<>();
+	private LinkedHashMap<String, List<Double>> getMetricMap(final File dataFile) throws IOException {
+		final List<String> lines = Files.readAllLines(dataFile.toPath());
+		final String[] keys = lines.get(0).split(",");
+		final LinkedHashMap<String, List<Double>> metrics = new LinkedHashMap<>(keys.length - 1);
+		final Set<Integer> skipIndex = new HashSet<>();
 		for (int i = 0; i < keys.length; i++) {
-			String value = keys[i];
+			final String value = keys[i];
 			if (VersionMetrics.MetricKeysImpl.VENDOR.toString().equals(value)
 					|| VersionMetrics.MetricKeysImpl.PRODUCT.toString().equals(value)
 					|| VersionMetrics.MetricKeysImpl.VERSION.toString().equals(value)) {
@@ -158,16 +156,16 @@ public class StatisticExecuter {
 		if (skipIndex.isEmpty()) {
 			throw new IllegalStateException("Project name not found");
 		}
-		for (String line : lines.subList(1, lines.size())) {
-			String[] values = line.split(",");
+		for (final String line : lines.subList(1, lines.size())) {
+			final String[] values = line.split(",");
 
 			boolean valid = true;
 			for (int i = 0; i < values.length; i++) {
 				if (skipIndex.contains(i)) {
 					continue;
 				}
-				String s = values[i];
-				if (s == null || "null".equals(s) || "NaN".equals(s)) {
+				final String s = values[i];
+				if ((s == null) || "null".equals(s) || "NaN".equals(s)) {
 					valid = false;
 					break;
 				}
@@ -185,11 +183,11 @@ public class StatisticExecuter {
 		return metrics;
 	}
 
-	public RealMatrix createMatrix(Map<String, List<Double>> metricValues) {
-		double[][] results = new double[metricValues.size()][];
+	public RealMatrix createMatrix(final Map<String, List<Double>> metricValues) {
+		final double[][] results = new double[metricValues.size()][];
 		int col = 0;
-		for (List<Double> s : metricValues.values()) {
-			double[] d = new double[s.size()];
+		for (final List<Double> s : metricValues.values()) {
+			final double[] d = new double[s.size()];
 			for (int i = 0; i < s.size(); i++) {
 				d[i] = s.get(i);
 			}
@@ -202,43 +200,43 @@ public class StatisticExecuter {
 	 * Version statistics
 	 */
 
-	private ArrayList<ProductMetricData> getProductMetricData(File dataFile) throws IOException {
-		List<String> lines = Files.readAllLines(dataFile.toPath());
-		List<String> keys = Arrays.asList(lines.get(0).split(","));
+	private ArrayList<ProductMetricData> getProductMetricData(final File dataFile) throws IOException {
+		final List<String> lines = Files.readAllLines(dataFile.toPath());
+		final List<String> keys = Arrays.asList(lines.get(0).split(","));
 
 		// if one of these wont be found (return -1), it would crash later when we would
 		// subscribt a list with -1 index
-		int idx_version = keys.indexOf(VersionMetrics.MetricKeysImpl.VERSION.toString());
-		int idx_vendor = keys.indexOf(VersionMetrics.MetricKeysImpl.VENDOR.toString());
-		int idx_product = keys.indexOf(VersionMetrics.MetricKeysImpl.PRODUCT.toString());
-		int idx_bugsKloc = keys.indexOf(IssueMetrics.MetricKeysImpl.BUG_ISSUES_KLOC_TIME.toString());
-		int idx_bugs = keys.indexOf(IssueMetrics.MetricKeysImpl.BUG_ISSUES_TIME.toString());
-		int idx_avgTime = keys.indexOf(IssueMetrics.MetricKeysImpl.AVG_OPEN_TIME_DAYS.toString());
-		int idx_locpc = keys.indexOf(SourceMeterMetrics.MetricKeysImpl.LOC_PER_CLASS.toString());
-		int idx_ldc = keys.indexOf(SourceMeterMetrics.MetricKeysImpl.LDC.toString());
-		int idx_wmc = keys.indexOf(SourceMeterMetrics.MetricKeysImpl.WMC.toString());
-		int idx_dit = keys.indexOf(SourceMeterMetrics.MetricKeysImpl.DIT.toString());
-		int idx_lcom5 = keys.indexOf(SourceMeterMetrics.MetricKeysImpl.LCOM.toString());
-		int idx_cbo = keys.indexOf(SourceMeterMetrics.MetricKeysImpl.CBO.toString());
-		int idx_lloc = keys.indexOf(SourceMeterMetrics.MetricKeysImpl.LLOC.toString());
+		final int idx_version = keys.indexOf(VersionMetrics.MetricKeysImpl.VERSION.toString());
+		final int idx_vendor = keys.indexOf(VersionMetrics.MetricKeysImpl.VENDOR.toString());
+		final int idx_product = keys.indexOf(VersionMetrics.MetricKeysImpl.PRODUCT.toString());
+		final int idx_bugsKloc = keys.indexOf(IssueMetrics.MetricKeysImpl.BUG_ISSUES_KLOC_TIME.toString());
+		final int idx_bugs = keys.indexOf(IssueMetrics.MetricKeysImpl.BUG_ISSUES_TIME.toString());
+		final int idx_avgTime = keys.indexOf(IssueMetrics.MetricKeysImpl.AVG_OPEN_TIME_DAYS.toString());
+		final int idx_locpc = keys.indexOf(SourceMeterMetrics.MetricKeysImpl.LOC_PER_CLASS.toString());
+		final int idx_ldc = keys.indexOf(SourceMeterMetrics.MetricKeysImpl.LDC.toString());
+		final int idx_wmc = keys.indexOf(SourceMeterMetrics.MetricKeysImpl.WMC.toString());
+		final int idx_dit = keys.indexOf(SourceMeterMetrics.MetricKeysImpl.DIT.toString());
+		final int idx_lcom5 = keys.indexOf(SourceMeterMetrics.MetricKeysImpl.LCOM.toString());
+		final int idx_cbo = keys.indexOf(SourceMeterMetrics.MetricKeysImpl.CBO.toString());
+		final int idx_lloc = keys.indexOf(SourceMeterMetrics.MetricKeysImpl.LLOC.toString());
 		lines.remove(0); // remove column keys row
 
-		ArrayList<String> productNames = new ArrayList<String>();
-		ArrayList<String> vendors = new ArrayList<String>();
+		final ArrayList<String> productNames = new ArrayList<>();
+		final ArrayList<String> vendors = new ArrayList<>();
 
-		ArrayList<Double> locpcs = new ArrayList<Double>();
-		ArrayList<String> versions = new ArrayList<String>();
-		 ArrayList<Double> bugs = new ArrayList<Double>();
-		ArrayList<Double> ldcs = new ArrayList<Double>();
-		ArrayList<Double> wmcs = new ArrayList<Double>();
-		ArrayList<Double> dits = new ArrayList<Double>();
-		ArrayList<Double> lcom5s = new ArrayList<Double>();
-		ArrayList<Double> cbos = new ArrayList<Double>();
-		 ArrayList<Double> bugsKloc = new ArrayList<Double>();
-		ArrayList<Double> llocs = new ArrayList<Double>();
+		final ArrayList<Double> locpcs = new ArrayList<>();
+		final ArrayList<String> versions = new ArrayList<>();
+		final ArrayList<Double> bugs = new ArrayList<>();
+		final ArrayList<Double> ldcs = new ArrayList<>();
+		final ArrayList<Double> wmcs = new ArrayList<>();
+		final ArrayList<Double> dits = new ArrayList<>();
+		final ArrayList<Double> lcom5s = new ArrayList<>();
+		final ArrayList<Double> cbos = new ArrayList<>();
+		final ArrayList<Double> bugsKloc = new ArrayList<>();
+		final ArrayList<Double> llocs = new ArrayList<>();
 
-		for (String line : lines) {
-			String[] split = line.split(",");
+		for (final String line : lines) {
+			final String[] split = line.split(",");
 			locpcs.add(Double.valueOf(split[idx_locpc]));
 			productNames.add(split[idx_product]);
 			vendors.add(split[idx_vendor]);
@@ -253,103 +251,100 @@ public class StatisticExecuter {
 			llocs.add(Double.valueOf(split[idx_lloc]));
 		}
 
-		ArrayList<ProductMetricData> metrics = new ArrayList<ProductMetricData>();
-		ProductMetricData metric = new ProductMetricData();
-		metric.productName = productNames.get(0);
-		metric.vendor = vendors.get(0);
+		ProductMetricData metric = new ProductMetricData(productNames.get(0), vendors.get(0));
+		final ArrayList<ProductMetricData> metrics = new ArrayList<>();
 		metrics.add(metric);
 		for (int i = 0; i < lines.size(); i++) {
-			String product = productNames.get(i);
-			if (!product.equals(metric.productName)) {
-				metric = new ProductMetricData();
+			final String product = productNames.get(i);
+			if (!product.equals(metric.getProductName())) {
+				metric = new ProductMetricData(product, vendors.get(i));
 				metrics.add(metric);
-				metric.productName = product;
-				metric.vendor = vendors.get(i);
 			}
-			metric.locpcs.add(locpcs.get(i));
-			metric.versions.add(versions.get(i));
-			metric.bugsKloc.add(bugsKloc.get(i));
-			metric.bugs.add(bugs.get(i));
-			metric.ldcs.add(ldcs.get(i));
-			metric.wmcs.add(wmcs.get(i));
-			metric.dits.add(dits.get(i));
-			metric.lcom5s.add(lcom5s.get(i));
-			metric.cbos.add(cbos.get(i));
-			metric.llocs.add(llocs.get(i));
+			metric.addLocpc(locpcs.get(i));
+			metric.addVersion(versions.get(i));
+			metric.addBugKLOC(bugsKloc.get(i));
+			metric.addBug(bugs.get(i));
+			metric.addLDC(ldcs.get(i));
+			metric.addWMC(wmcs.get(i));
+			metric.addDIT(dits.get(i));
+			metric.addLCOM5(lcom5s.get(i));
+			metric.addCBO(cbos.get(i));
+			metric.addLLOC(llocs.get(i));
 		}
 		return metrics;
 	}
 
-	private Double pmdDiff(Double previous, Double next) {
+	private Double pmdDiff(final Double previous, final Double next) {
 		return Precision.round((((next - previous) / previous) * 100), 2);
 	}
 
-	String[] columnNamesInVersionsFile = { "LOCpC", "BUG_ISSUES_KLOC_TIME","BUG_ISSUES_TIME", "LDC", "WMC", "DIT", "LCCM3", "CBO", "LLOC" };
+	String[] columnNamesInVersionsFile = { "LOCpC", "BUG_ISSUES_KLOC_TIME", "BUG_ISSUES_TIME", "LDC", "WMC", "DIT",
+			"LCCM3", "CBO", "LLOC" };
 
-	//@Test
+	// @Test
 	public void writeVersionsCSVFile() {
 		try {
-			for (ProductMetricData metric : getProductMetricData(new File("input/versions-results.csv"))) {
+			for (final ProductMetricData metric : getProductMetricData(new File("input/versions-results.csv"))) {
 
-				ArrayList<ArrayList<Double>> columns = new ArrayList<ArrayList<Double>>();
-				columns.add(metric.locpcs);
-				 columns.add(metric.bugsKloc);
-				 columns.add(metric.bugs);
-				columns.add(metric.ldcs);
-				columns.add(metric.wmcs);
-				columns.add(metric.dits);
-				columns.add(metric.lcom5s);
-				columns.add(metric.cbos);
+				final List<List<Double>> columns = new ArrayList<>();
+				columns.add(metric.getLOCpCS());
+				columns.add(metric.getBugsKLOC());
+				columns.add(metric.getBugs());
+				columns.add(metric.getLDCs());
+				columns.add(metric.getWMCs());
+				columns.add(metric.getDITs());
+				columns.add(metric.getLCOM5s());
+				columns.add(metric.getCBOs());
 				// columns.add(metric.avgTime);
-				columns.add(metric.llocs);
+				columns.add(metric.getLLOCs());
 
 				String columnNames = "Version,";
 
-				for (String columnName : columnNamesInVersionsFile) {
+				for (final String columnName : this.columnNamesInVersionsFile) {
 					columnNames += columnName + ",";
 				}
 
 				columnNames = columnNames.substring(0, columnNames.length() - 1);
 				columnNames += "\n";
 
-				FileWriter writer = new FileWriter("input/" + metric.productName + "-versionGraphData.csv");
-				writer.write(columnNames);
+				try (FileWriter writer = new FileWriter("input/" + metric.getProductName() + "-versionGraphData.csv")) {
+					writer.write(columnNames);
 
-				for (int i = 1; i < metric.versions.size(); i++) {
-					String line = metric.versions.get(i - 1) + "->" + metric.versions.get(i);
+					for (int i = 1; i < metric.getVersions().size(); i++) {
+						final StringBuilder line = new StringBuilder(metric.getVersions().get(i - 1)).append("->").append(metric.getVersions().get(i));
 
-					for (ArrayList<Double> column : columns) {
-						line = line + "," + pmdDiff(column.get(i - 1), column.get(i));
+						for (final List<Double> column : columns) {
+							line.append(",").append(pmdDiff(column.get(i - 1), column.get(i)));
+						}
+
+						line.append("\n");
+						writer.write(line.toString());
 					}
-
-					line += "\n";
-					writer.write(line);
 				}
-				writer.close();
 			}
-		} catch (IOException e1) {
+		} catch (final IOException e1) {
 			e1.printStackTrace();
 		}
 	}
 
-	 @Test
-	public void createVersionGraphs() {
-		ArrayList<String> projectNames = new ArrayList<>();
-		File[] versionGraphCSVs = new File("input").listFiles();
+	@Test
+	public void createVersionGraphs() throws IOException {
+		final ArrayList<String> projectNames = new ArrayList<>();
+		final File[] versionGraphCSVs = new File("input").listFiles();
 
 		// Get all versionGraph files
-		for (File file : versionGraphCSVs) {
+		for (final File file : versionGraphCSVs) {
 			if (file.getName().contains("versionGraphData")) {
 				projectNames.add(file.getName());
 			}
 		}
 
-		for (String projectName : projectNames) {
-			DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-			File currentProject = new File("input/" + projectName);
+		for (final String projectName : projectNames) {
+			final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+			final File currentProject = new File("input/" + projectName);
 
 			String line = "";
-			String cvsSplitBy = ",";
+			final String cvsSplitBy = ",";
 
 			try (BufferedReader br = new BufferedReader(new FileReader(currentProject))) {
 
@@ -358,57 +353,50 @@ public class StatisticExecuter {
 				while ((line = br.readLine()) != null) {
 
 					// use comma as separator
-					String[] data = line.split(cvsSplitBy);
+					final String[] data = line.split(cvsSplitBy);
 
-					for (int i = 1; i < columnNamesInVersionsFile.length; i++) {
-						dataset.addValue(Double.parseDouble(data[i]), columnNamesInVersionsFile[i - 1], data[0]);
+					for (int i = 1; i < this.columnNamesInVersionsFile.length; i++) {
+						dataset.addValue(Double.parseDouble(data[i]), this.columnNamesInVersionsFile[i - 1], data[0]);
 					}
 
 				}
 
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				e.printStackTrace();
 			}
 
-			String chartTitle = "Metric changes for project " + projectName.replace("-versionGraphData.csv", "");
-			String categoryAxisLabel = "Version";
-			String valueAxisLabel = "Metric value";
+			final String chartTitle = "Metric changes for project " + projectName.replace("-versionGraphData.csv", "");
+			final String categoryAxisLabel = "Version";
+			final String valueAxisLabel = "Metric value";
 
-			JFreeChart chart = ChartFactory.createLineChart(chartTitle, categoryAxisLabel, valueAxisLabel, dataset);
+			final JFreeChart chart = ChartFactory.createLineChart(chartTitle, categoryAxisLabel, valueAxisLabel, dataset);
 
 			// Styling
 			chart.getPlot().setBackgroundPaint(Color.WHITE);
 			chart.getPlot().setOutlineStroke(new BasicStroke(3.0f));
-			CategoryPlot plot = chart.getCategoryPlot();
-			//plot.getRangeAxis().setRange(-100, 100);
+			final CategoryPlot plot = chart.getCategoryPlot();
+			// plot.getRangeAxis().setRange(-100, 100);
 			// Thicken the plot lines
-			for (int i = 0; i < columnNamesInVersionsFile.length - 1; i++) {
+			for (int i = 0; i < (this.columnNamesInVersionsFile.length - 1); i++) {
 				plot.getRenderer().setSeriesStroke(i, new BasicStroke(3.0f));
 			}
-			
-			CategoryAxis domainAxis = plot.getDomainAxis();
+
+			final CategoryAxis domainAxis = plot.getDomainAxis();
 			domainAxis.setLowerMargin(0);
 			domainAxis.setUpperMargin(0);
-			CategoryAxis xAxis = plot.getDomainAxis();
+			final CategoryAxis xAxis = plot.getDomainAxis();
 			xAxis.setLowerMargin(0);
 			xAxis.setUpperMargin(0);
 			xAxis.setMaximumCategoryLabelLines(3);
 
 			// GENERATE SEVERAL SIZES
-//		    int width = 1280;    /* Width of the image */
-//		    int height = 720;   /* Height of the image */ 
-			int width = 800; /* Width of the image */
-			int height = 600; /* Height of the image */
+			final int width = 800; /* Width of the image */
+			final int height = 600; /* Height of the image */
 
-			File lineChart = new File(
+			final File lineChart = new File(
 					"Resources/LineChart-" + projectName.replace(".csv", "") + "-" + width + "x" + height + ".jpeg");
 
-			try {
-				ChartUtils.saveChartAsJPEG(lineChart, chart, width, height);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			ChartUtils.saveChartAsJPEG(lineChart, chart, width, height);
 
 		}
 	}

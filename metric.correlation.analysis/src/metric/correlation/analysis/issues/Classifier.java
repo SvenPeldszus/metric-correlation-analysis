@@ -9,6 +9,4 @@ public interface Classifier {
 	public IssueType classify(Issue issue);
 
 	public void train(List<Issue> issues);
-
-	//public void init();
 }

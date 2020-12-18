@@ -2,7 +2,7 @@ package metric.correlation.analysis.test;
 
 import org.junit.Test;
 
-import metric.correlation.analysis.projectSelection.ProjectSelector;
+import metric.correlation.analysis.selection.ProjectSelector;
 
 public class InitializeDatabases {
 	

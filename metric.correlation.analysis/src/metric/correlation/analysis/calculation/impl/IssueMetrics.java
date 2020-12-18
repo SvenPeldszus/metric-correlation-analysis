@@ -39,56 +39,56 @@ import metric.correlation.analysis.issues.Issue.IssueType;
 import metric.correlation.analysis.issues.IssueCrawler;
 
 public class IssueMetrics implements IMetricCalculator {
-	private IssueCrawler issueCrawler = new GithubIssueCrawler(); // uses default nlpclassifier
-	private Map<String, Double> metricValues = new HashMap<>();
-	private Map<String, String> metricResults = new HashMap<>();
+	private final IssueCrawler issueCrawler = new GithubIssueCrawler(); // uses default nlpclassifier
+	private final Map<String, Double> metricValues = new HashMap<>();
+	private final Map<String, String> metricResults = new HashMap<>();
 	private static final Logger LOGGER = Logger.getLogger(IssueMetrics.class);
 	private static final double DAYS_PER_MONTH = 30.4;
 
 	@Override
-	public boolean calculateMetric(IJavaProject project, String productName, String vendorName, String version,
-			Map<String, String> map) {
-		for (String key : getMetricKeys()) {
-			metricValues.put(key, 0.0);
+	public boolean calculateMetric(final IJavaProject project, final String productName, final String vendorName, final String version,
+			final Map<String, String> map) {
+		for (final String key : getMetricKeys()) {
+			this.metricValues.put(key, 0.0);
 		}
-		double lloc = Double.parseDouble(map.get(SourceMeterMetrics.MetricKeysImpl.LLOC.toString()));
+		final double lloc = Double.parseDouble(map.get(SourceMeterMetrics.MetricKeysImpl.LLOC.toString()));
 		if (lloc <= 0) {
 			return false;
 		}
 		double closedIssues = 0;
-		double contributorCount = getContributorCount(vendorName, productName) / 10; // normalize for 10 contributors
+		final double contributorCount = getContributorCount(vendorName, productName) / 10; // normalize for 10 contributors
 		if (contributorCount == -1) {
 			return false;
 		}
-		List<Issue> issues = issueCrawler.getIssues(vendorName, productName, version);
-		double releaseDuration = issueCrawler.getReleaseDurationInMonths();
-		for (Issue issue : issues) {
+		final List<Issue> issues = this.issueCrawler.getIssues(vendorName, productName, version);
+		final double releaseDuration = this.issueCrawler.getReleaseDurationInMonths();
+		for (final Issue issue : issues) {
 			if (issue.isClosed()) {
 				closedIssues++;
-				double days = ChronoUnit.DAYS.between(issue.getCreationDate(), issue.getClosingDate());
-				metricValues.put(AVG_OPEN_TIME_DAYS.toString(), metricValues.get(AVG_OPEN_TIME_DAYS.toString()) + days);
+				final double days = ChronoUnit.DAYS.between(issue.getCreationDate(), issue.getClosingDate());
+				this.metricValues.put(AVG_OPEN_TIME_DAYS.toString(), this.metricValues.get(AVG_OPEN_TIME_DAYS.toString()) + days);
 			}
-			IssueType issueType = issue.getType();
+			final IssueType issueType = issue.getType();
 			if (issueType == null) {
 				continue;
 			}
 			if (issueType.equals(IssueType.BUG)) {
-				metricValues.put(BUG_ISSUES.toString(), metricValues.get(BUG_ISSUES.toString()) + 1);
+				this.metricValues.put(BUG_ISSUES.toString(), this.metricValues.get(BUG_ISSUES.toString()) + 1);
 			}
 			if (issueType.equals(IssueType.SECURITY_BUG)) {
-				metricValues.put(BUG_ISSUES.toString(), metricValues.get(BUG_ISSUES.toString()) + 1);
-				metricValues.put(SECURITY_BUG_ISSUES.toString(), metricValues.get(SECURITY_BUG_ISSUES.toString()) + 1);
+				this.metricValues.put(BUG_ISSUES.toString(), this.metricValues.get(BUG_ISSUES.toString()) + 1);
+				this.metricValues.put(SECURITY_BUG_ISSUES.toString(), this.metricValues.get(SECURITY_BUG_ISSUES.toString()) + 1);
 			}
 		}
-		double avgTime = closedIssues == 0 ? releaseDuration * DAYS_PER_MONTH
-				: metricValues.get(AVG_OPEN_TIME_DAYS.toString()) / (double) closedIssues;
+		final double avgTime = closedIssues == 0 ? releaseDuration * DAYS_PER_MONTH
+				: this.metricValues.get(AVG_OPEN_TIME_DAYS.toString()) / closedIssues;
 
-		metricValues.put(CONTRIBUTOR.toString(), contributorCount);
+		this.metricValues.put(CONTRIBUTOR.toString(), contributorCount);
 
-		metricValues.put(AVG_OPEN_TIME_DAYS.toString(), avgTime);
-		metricValues.put(AVG_OPEN_TIME_DAYS_CONT.toString(), avgTime / contributorCount);
-		metricValues.put(AVG_OPEN_TIME_DAYS_KLOC.toString(), avgTime * 1000 / lloc);
-		metricValues.put(AVG_OPEN_TIME_DAYS_TIME.toString(), avgTime / releaseDuration);
+		this.metricValues.put(AVG_OPEN_TIME_DAYS.toString(), avgTime);
+		this.metricValues.put(AVG_OPEN_TIME_DAYS_CONT.toString(), avgTime / contributorCount);
+		this.metricValues.put(AVG_OPEN_TIME_DAYS_KLOC.toString(), (avgTime * 1000) / lloc);
+		this.metricValues.put(AVG_OPEN_TIME_DAYS_TIME.toString(), avgTime / releaseDuration);
 
 		// metricValues.put(ISSUES_TOTAL.toString(), (double) issues.size());
 		// metricValues.put(ISSUES_TOTAL_KLOC.toString(), issues.size() * 1000.0 /
@@ -96,17 +96,17 @@ public class IssueMetrics implements IMetricCalculator {
 		// metricValues.put(ISSUES_TOTAL_CONT.toString(), issues.size() /
 		// contributorCount);
 
-		metricValues.put(BUG_ISSUES_KLOC.toString(), metricValues.get(BUG_ISSUES.toString()) * 1000.0 / lloc);
-		metricValues.put(BUG_ISSUES_CONT.toString(), metricValues.get(BUG_ISSUES.toString()) / contributorCount);
+		this.metricValues.put(BUG_ISSUES_KLOC.toString(), (this.metricValues.get(BUG_ISSUES.toString()) * 1000.0) / lloc);
+		this.metricValues.put(BUG_ISSUES_CONT.toString(), this.metricValues.get(BUG_ISSUES.toString()) / contributorCount);
 
-		metricValues.put(SECURITY_BUG_ISSUES_KLOC.toString(),
-				metricValues.get(SECURITY_BUG_ISSUES.toString()) * 1000.0 / lloc);
-		metricValues.put(SECURITY_BUG_ISSUES_CONT.toString(),
-				metricValues.get(SECURITY_BUG_ISSUES.toString()) / contributorCount);
+		this.metricValues.put(SECURITY_BUG_ISSUES_KLOC.toString(),
+				(this.metricValues.get(SECURITY_BUG_ISSUES.toString()) * 1000.0) / lloc);
+		this.metricValues.put(SECURITY_BUG_ISSUES_CONT.toString(),
+				this.metricValues.get(SECURITY_BUG_ISSUES.toString()) / contributorCount);
 
-		for (String key : metricValues.keySet()) {
+		for (final String key : this.metricValues.keySet()) {
 			if (key.endsWith("_TIME") && !key.startsWith("AVG_OPEN_TIME_DAYS")) {
-				metricValues.put(key, metricValues.get(key.replace("_TIME", "")) / releaseDuration);
+				this.metricValues.put(key, this.metricValues.get(key.replace("_TIME", "")) / releaseDuration);
 			}
 		}
 		setResults();
@@ -114,21 +114,21 @@ public class IssueMetrics implements IMetricCalculator {
 	}
 
 	private void setResults() {
-		DecimalFormat dFormat = SourceMeterMetrics.getFormatter();
-		for (String s : getMetricKeys()) {
-			metricResults.put(s, dFormat.format(metricValues.get(s)));
+		final DecimalFormat dFormat = SourceMeterMetrics.getFormatter();
+		for (final String s : getMetricKeys()) {
+			this.metricResults.put(s, dFormat.format(this.metricValues.get(s)));
 		}
 	}
 
-	public static double getContributorCount(String vendorName, String productName) {
+	public static double getContributorCount(final String vendorName, final String productName) {
 		double cnt = 0.0;
 		for (int i = 1; i < 100; i++) {
-			String path = "https://api.github.com/repos/" + vendorName + "/" + productName
+			final String path = "https://api.github.com/repos/" + vendorName + "/" + productName
 					+ "/contributors?per_page=100&page=" + i;
 			JsonArray jArray;
 			try {
 				jArray = GithubIssueCrawler.getJsonFromURL(path).getAsJsonArray();
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				LOGGER.error("could not retrieve contributor information", e);
 				return -1;
 			}
@@ -142,7 +142,7 @@ public class IssueMetrics implements IMetricCalculator {
 
 	@Override
 	public Map<String, String> getResults() {
-		return metricResults;
+		return this.metricResults;
 	}
 
 	@Override
@@ -152,7 +152,7 @@ public class IssueMetrics implements IMetricCalculator {
 
 	@Override
 	public Set<Class<? extends IMetricCalculator>> getDependencies() {
-		Set<Class<? extends IMetricCalculator>> dependencies = new HashSet<>();
+		final Set<Class<? extends IMetricCalculator>> dependencies = new HashSet<>();
 		dependencies.add(SourceMeterMetrics.class);
 		return dependencies;
 	}
@@ -166,25 +166,25 @@ public class IssueMetrics implements IMetricCalculator {
 		AVG_OPEN_TIME_DAYS_CONT("AVG_OPEN_TIME_DAYS_CONT"), AVG_OPEN_TIME_DAYS_KLOC("AVG_OPEN_TIME_DAYS_KLOC"),
 		AVG_OPEN_TIME_DAYS_TIME("AVG_OPEN_TIME_DAYS_TIME"), CONTRIBUTOR("CONTRIBUTOR");
 
-		private String value;
+		private final String value;
 
-		private MetricKeysImpl(String value) {
+		MetricKeysImpl(final String value) {
 			this.value = value;
 		}
 
 		@Override
 		public String toString() {
-			return value;
+			return this.value;
 		}
 	}
 
 	// @Test
 	public void getIssuesFromDatabase() {
-		List<Issue> issues = new LinkedList<>();
+		final List<Issue> issues = new LinkedList<>();
 		try (MongoDBHelper mongo = new MongoDBHelper("metric_correlation", "antlr4issues")) {
-			List<Document> maps = mongo.getDocuments(new HashMap<>());
-			for (Document doc : maps) {
-				Issue issue = new Issue();
+			final List<Document> maps = mongo.getDocuments(new HashMap<>());
+			for (final Document doc : maps) {
+				final Issue issue = new Issue();
 				issue.fromDocument(doc);
 				issues.add(issue);
 			}
@@ -194,13 +194,13 @@ public class IssueMetrics implements IMetricCalculator {
 
 	@Test
 	public void retrieveIssues() {
-		GithubIssueCrawler crawler = new GithubIssueCrawler();
-		String product = "antlr4";
-		String vendor = "antlr";
-		String version = "4.0";
-		List<Issue> issues = crawler.getIssues(vendor, product, version);
-		List<Map<String, Object>> issueMaps = new LinkedList<>();
-		for (Issue issue : issues) {
+		final GithubIssueCrawler crawler = new GithubIssueCrawler();
+		final String product = "antlr4";
+		final String vendor = "antlr";
+		final String version = "4.0";
+		final List<Issue> issues = crawler.getIssues(vendor, product, version);
+		final List<Map<String, Object>> issueMaps = new LinkedList<>();
+		for (final Issue issue : issues) {
 			issueMaps.add(issue.asMap());
 		}
 		// try (MongoDBHelper mongo = new MongoDBHelper("metric_correlation",

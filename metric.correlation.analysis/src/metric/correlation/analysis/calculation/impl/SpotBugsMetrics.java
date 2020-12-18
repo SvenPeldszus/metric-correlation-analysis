@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,66 +42,66 @@ public class SpotBugsMetrics implements IMetricClassCalculator {
 
 	private BugReporter bugReporter;
 	private IFindBugsEngine engine;
-	private Map<String, Map<String, Integer>> classResults = new HashMap<>();
+	private final Map<String, Map<String, Integer>> classResults = new HashMap<>();
 	private Map<String, Double> metricResults;
 	private double lloc = 0;
 
 	private void init() {
 		this.engine = new FindBugs2();
-		bugReporter = new BugReporter();
-		bugReporter.setPriorityThreshold(Priorities.LOW_PRIORITY);
-		bugReporter.setRankThreshold(BugRanker.VISIBLE_RANK_MAX);
+		this.bugReporter = new BugReporter();
+		this.bugReporter.setPriorityThreshold(Priorities.LOW_PRIORITY);
+		this.bugReporter.setRankThreshold(BugRanker.VISIBLE_RANK_MAX);
 	}
 
 	@Override
-	public boolean calculateMetric(IJavaProject project, String productName, String vendorName, String version,
-			Map<String, String> map) {
-		String llocKey = SourceMeterMetrics.MetricKeysImpl.LLOC.toString();
+	public boolean calculateMetric(final IJavaProject project, final String productName, final String vendorName, final String version,
+			final Map<String, String> map) {
+		final String llocKey = SourceMeterMetrics.MetricKeysImpl.LLOC.toString();
 		if (!map.containsKey(llocKey)) {
 			return false;
 		}
-		lloc = Double.valueOf(map.get(llocKey));
-		metricResults = new HashMap<>();
-		for (String metricKey : getMetricKeys()) {
-			metricResults.put(metricKey, 0.0);
+		this.lloc = Double.valueOf(map.get(llocKey));
+		this.metricResults = new HashMap<>();
+		for (final String metricKey : getMetricKeys()) {
+			this.metricResults.put(metricKey, 0.0);
 		}
-		metricResults.put("EXPERIMENTAL", 0.0); // not a metric but makes code easier
+		this.metricResults.put("EXPERIMENTAL", 0.0); // not a metric but makes code easier
 		// String projectLocation =
 		// project.getProject().getLocation().toFile().getAbsolutePath(); // imported
 		// code path
-		String projectLocation = project.getProject().getLocation().toFile().getParentFile().getParentFile()
+		final String projectLocation = project.getProject().getLocation().toFile().getParentFile().getParentFile()
 				.getAbsolutePath() + File.separator + "repositories";
 		try {
 			analyzeProject(projectLocation + File.separator + productName);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			LOGGER.log(Level.ERROR, "spotbugs analysis failed");
 			return false;
 		}
-		BugCollection bugInstanceCollection = engine.getBugReporter().getBugCollection();
-		Collection<Map<String, String>> bugs = collectBugData(bugInstanceCollection);
+		final BugCollection bugInstanceCollection = this.engine.getBugReporter().getBugCollection();
+		final Collection<Map<String, String>> bugs = collectBugData(bugInstanceCollection);
 		evaluateMetrics(bugs, productName, vendorName, version);
 		return true;
 	}
 
-	private void evaluateMetrics(Collection<Map<String, String>> bugsList, String productName, String vendorName,
-			String version) {
-		for (Map<String, String> bugData : bugsList) {
+	private void evaluateMetrics(final Collection<Map<String, String>> bugsList, final String productName, final String vendorName,
+			final String version) {
+		for (final Map<String, String> bugData : bugsList) {
 			if (STORE_RESULTS) {
 				bugData.put("productName", productName);
 				bugData.put("vendorName", vendorName);
 				bugData.put("version", version);
 				storeData(bugData);
 			}
-			int priority = Integer.parseInt(bugData.get("rank")); // careful with naming
-			String category = bugData.get("category");
-			String className = bugData.get("class");
-			if (!classResults.containsKey(className)) {
-				HashMap<String, Integer> classMap = new HashMap<>();
-				for (String metricKey : getMetricKeys()) {
+			final int priority = Integer.parseInt(bugData.get("rank")); // careful with naming
+			final String category = bugData.get("category");
+			final String className = bugData.get("class");
+			if (!this.classResults.containsKey(className)) {
+				final HashMap<String, Integer> classMap = new HashMap<>();
+				for (final String metricKey : getMetricKeys()) {
 					classMap.put(metricKey, 0);
 				}
 				classMap.put("EXPERIMENTAL", 0);
-				classResults.put(className, classMap);
+				this.classResults.put(className, classMap);
 			}
 			String priorityCat;
 			if (priority <= 4) {
@@ -110,51 +111,51 @@ public class SpotBugsMetrics implements IMetricClassCalculator {
 			} else {
 				priorityCat = MetricKeysImpl.LOW_PRIO.toString();
 			}
-			Map<String, Integer> classMap = classResults.get(className);
-			metricResults.put(priorityCat, metricResults.get(priorityCat) + 1);
-			metricResults.put(category, metricResults.get(category) + 1);
+			final Map<String, Integer> classMap = this.classResults.get(className);
+			this.metricResults.put(priorityCat, this.metricResults.get(priorityCat) + 1);
+			this.metricResults.put(category, this.metricResults.get(category) + 1);
 			classMap.put(category, classMap.get(category) + 1);
 			classMap.put(priorityCat, classMap.get(priorityCat) + 1);
 		}
-		metricResults.put(MetricKeysImpl.VIOLATIONS.toString(), (double) bugsList.size());
-		metricResults.remove("EXPERIMENTAL");
+		this.metricResults.put(MetricKeysImpl.VIOLATIONS.toString(), (double) bugsList.size());
+		this.metricResults.remove("EXPERIMENTAL");
 		normalizeResults();
 	}
 
 	private void normalizeResults() {
-		for (String key : metricResults.keySet()) {
-			double total = metricResults.get(key);
-			double norm = total * 1000.0 / lloc;
-			metricResults.put(key, norm);
+		for (final Entry<String, Double> entry : this.metricResults.entrySet()) {
+			final double total =entry.getValue();
+			final double norm = (total * 1000.0) / this.lloc;
+			this.metricResults.put(entry.getKey(), norm);
 		}
 	}
 
-	private void storeData(Map<String, String> bugData) {
+	private void storeData(final Map<String, String> bugData) {
 		try (MongoDBHelper helper = new MongoDBHelper(MongoDBHelper.DEFAULT_DATABASE, BUG_COLLECTION)) {
 			helper.storeData(bugData);
 		}
 	}
 
-	private void analyzeProject(String projectLocation) throws IOException {
+	private void analyzeProject(final String projectLocation) throws IOException {
 		init();
-		TextUICommandLine commandLine = new TextUICommandLine();
-		FindBugs.processCommandLine(commandLine, new String[] { projectLocation }, engine); // initializes the // for
-																							// the engine
-		engine.setBugReporter(bugReporter); // use our own bug reporter, default one outputs to console
-		FindBugs.runMain(engine, commandLine); // run the analysis
+		final TextUICommandLine commandLine = new TextUICommandLine();
+		FindBugs.processCommandLine(commandLine, new String[] { projectLocation }, this.engine); // initializes the // for
+		// the engine
+		this.engine.setBugReporter(this.bugReporter); // use our own bug reporter, default one outputs to console
+		FindBugs.runMain(this.engine, commandLine); // run the analysis
 
 	}
 
-	private Collection<Map<String, String>> collectBugData(BugCollection bugInstanceCollection) {
-		Collection<Map<String, String>> bugList = new LinkedList<>();
-		for (BugInstance bugInstance : bugInstanceCollection) {
-			Map<String, String> bugData = new HashMap<>();
-			int priority = bugInstance.getPriority();
-			int rank = bugInstance.getBugRank();
-			String type = bugInstance.getType();
-			String category = bugInstance.getBugPattern().getCategory();
+	private Collection<Map<String, String>> collectBugData(final BugCollection bugInstanceCollection) {
+		final Collection<Map<String, String>> bugList = new LinkedList<>();
+		for (final BugInstance bugInstance : bugInstanceCollection) {
+			final Map<String, String> bugData = new HashMap<>();
+			final int priority = bugInstance.getPriority();
+			final int rank = bugInstance.getBugRank();
+			final String type = bugInstance.getType();
+			final String category = bugInstance.getBugPattern().getCategory();
 			String className = "";
-			for (BugAnnotation annotation : bugInstance.getAnnotations()) {
+			for (final BugAnnotation annotation : bugInstance.getAnnotations()) {
 				if (annotation instanceof ClassAnnotation) {
 					className = ((ClassAnnotation) annotation).getClassName();
 					break;
@@ -175,9 +176,9 @@ public class SpotBugsMetrics implements IMetricClassCalculator {
 
 	@Override
 	public Map<String, String> getResults() {
-		Map<String, String> result = new HashMap<>();
-		for (String cat : getMetricKeys()) {
-			result.put(cat, String.valueOf(metricResults.get(cat)));
+		final Map<String, String> result = new HashMap<>();
+		for (final String cat : getMetricKeys()) {
+			result.put(cat, String.valueOf(this.metricResults.get(cat)));
 		}
 		return result;
 	}
@@ -193,64 +194,63 @@ public class SpotBugsMetrics implements IMetricClassCalculator {
 		NOISE("NOISE"), PERFORMANCE("PERFORMANCE"), SECURITY("SECURITY"), STYLE("STYLE"), HIGH_PRIO("HIGH_PRIO"),
 		MEDIUM_PRIO("MEDIUM_PRIO"), LOW_PRIO("LOW_PRIO");
 
-		private String value;
+		private final String value;
 
-		private MetricKeysImpl(String value) {
+		MetricKeysImpl(final String value) {
 			this.value = value;
 		}
 
 		@Override
 		public String toString() {
-			return value;
+			return this.value;
 		}
 	}
 
 	@Override
 	public Set<Class<? extends IMetricCalculator>> getDependencies() {
-		Set<Class<? extends IMetricCalculator>> dependencies = new HashSet<Class<? extends IMetricCalculator>>();
+		final Set<Class<? extends IMetricCalculator>> dependencies = new HashSet<>();
 		dependencies.add(SourceMeterMetrics.class);
 		return dependencies;
 	}
 
 	@Override
 	public Map<String, Map<String, String>> getClassResults() {
-		Map<String, Map<String, String>> result = new HashMap<>();
-		for (String className : classResults.keySet()) {
-			Map<String, String> classMap = new HashMap<>();
-			classResults.get(className).entrySet().stream()
-					.forEach(e -> classMap.put(e.getKey(), String.valueOf(e.getValue())));
-			result.put(className, classMap);
+		final Map<String, Map<String, String>> result = new HashMap<>();
+		for (final Entry<String, Map<String, Integer>> entry : this.classResults.entrySet()) {
+			final Map<String, String> classMap = entry.getValue().entrySet().stream()
+					.collect(Collectors.toMap(Entry::getKey, e-> String.valueOf(e.getValue())));
+			result.put(entry.getKey(), classMap);
 		}
 		return result;
 	}
 
 	private class BugReporter extends TextUIBugReporter {
-		private SortedBugCollection bugCollection;
+		private final SortedBugCollection bugCollection;
 
 		public BugReporter() {
 			this.bugCollection = new SortedBugCollection();
-			bugCollection.setTimestamp(System.currentTimeMillis());
+			this.bugCollection.setTimestamp(System.currentTimeMillis());
 		}
 
 		@Override
 		public void finish() {
-			bugCollection.bugsPopulated();
+			this.bugCollection.bugsPopulated();
 		}
 
 		@Override
 		public BugCollection getBugCollection() {
-			return bugCollection;
+			return this.bugCollection;
 		}
 
 		@Override
-		public void observeClass(ClassDescriptor classDescriptor) {
+		public void observeClass(final ClassDescriptor classDescriptor) {
 			// gets called when a new class is being checked, no action needed
 
 		}
 
 		@Override
-		protected void doReportBug(BugInstance bugInstance) {
-			if (bugCollection.add(bugInstance)) {
+		protected void doReportBug(final BugInstance bugInstance) {
+			if (this.bugCollection.add(bugInstance)) {
 				notifyObservers(bugInstance);
 			}
 		}

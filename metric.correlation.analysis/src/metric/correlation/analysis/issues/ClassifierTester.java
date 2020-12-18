@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.junit.Test;
 
@@ -13,6 +14,10 @@ import metric.correlation.analysis.database.MongoDBHelper;
 import metric.correlation.analysis.issues.Issue.IssueType;
 
 public class ClassifierTester {
+	/**
+	 * The logger of this class
+	 */
+	private static final Logger LOGGER = Logger.getLogger(ClassifierTester.class);
 
 	private static final String BUG_COLLECTION = "issues_test_bugs";
 	private static final String SECURITY_COLLECTION = "issues_test_security";
@@ -73,15 +78,15 @@ public class ClassifierTester {
 		double precision = ((double) tp) / (tp + fp);
 		double recall = ((double) tp) / (tp + fn);
 		double accuracy = ((double) tp + tn) / (tp + tn + fp + fn);
-		System.out.println("Precision: " + precision);
-		System.out.println("Recall : " + recall);
-		System.out.println("Accuracy : " + accuracy);
+		LOGGER.info("Precision: " + precision);
+		LOGGER.info("Recall : " + recall);
+		LOGGER.info("Accuracy : " + accuracy);
 	}
 
 	public void rateClassifier() {
-		System.out.println("Rating bug classfication");
+		LOGGER.info("Rating bug classfication");
 		runTest(bugIssues, bugTypes);
-		System.out.println("Rating security classfication");
+		LOGGER.info("Rating security classfication");
 		runTest(secIssues, secTypes);
 	}
 
@@ -94,7 +99,7 @@ public class ClassifierTester {
 		try (MongoDBHelper db = new MongoDBHelper("metric_correlation", "issues")) {
 			sample = db.sampleDocs(new String[] { "BUG", "FEATURE_REQUEST" }, 250);
 			long deleted = db.delete(sample);
-			System.out.println("deleted" + deleted);
+			LOGGER.info("deleted" + deleted);
 		}
 		if (sample != null) {
 			try (MongoDBHelper db = new MongoDBHelper("metric_correlation", "issues_test_security")) {

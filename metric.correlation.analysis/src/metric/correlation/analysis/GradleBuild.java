@@ -15,20 +15,24 @@ public class GradleBuild {
 
 	private static final Logger LOGGER = Logger.getLogger(GradleBuild.class);
 
+	private GradleBuild() {
+		// This class should not be instantiated
+	}
+
 	/**
 	 * @param src - The downloaded apk src
 	 * @return the apk for this application
 	 * @throws UnsupportedOperationSystemException when not on Windows/Linux
 	 */
-	public static File buildApk(File src) throws UnsupportedOperationSystemException {
+	public static File buildApk(final File src) throws UnsupportedOperationSystemException {
 
 		if (new File(src, "build").exists()) {
 			LOGGER.warn("Build already exists!");
 			return getApk(src);
 		}
 
-		String cmd = "cd " + src.getPath() + " && gradlew assembleDebug";
-		Runtime run = Runtime.getRuntime();
+		final String cmd = "cd " + src.getPath() + " && gradlew assembleDebug";
+		final Runtime run = Runtime.getRuntime();
 		Process process;
 
 		try {
@@ -57,10 +61,10 @@ public class GradleBuild {
 				process.destroy();
 			}
 
-		} catch (InterruptedException e) {
+		} catch (final InterruptedException e) {
 			LOGGER.warn(e.getMessage(), e);
 			Thread.currentThread().interrupt();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			LOGGER.warn(e.getMessage(), e);
 		}
 		return getApk(src);
@@ -68,29 +72,24 @@ public class GradleBuild {
 
 	/**
 	 * Searches for the build apk file
-	 * 
+	 *
 	 * @param src the directory of the application
 	 * @return a compiled apk file
 	 */
-	private static File getApk(File src) {
-		File[] list = src.listFiles();
+	private static File getApk(final File src) {
+		final File[] list = src.listFiles();
 
 		if (list == null) {
 			throw new IllegalArgumentException("Directory is empty!");
 		}
 
-		for (File file : list) {
+		for (final File file : list) {
 
 			if (file.isDirectory()) {
 				return getApk(file);
 
 			} else {
-				File[] apklist = file.getParentFile().listFiles(new FilenameFilter() {
-					@Override
-					public boolean accept(File dir, String name) {
-						return name.endsWith(".apk");
-					}
-				});
+				final File[] apklist = file.getParentFile().listFiles((FilenameFilter) (dir, name) -> name.endsWith(".apk"));
 
 				if (apklist.length > 0) {
 					return apklist[0];
@@ -102,14 +101,14 @@ public class GradleBuild {
 
 	/**
 	 * UnsupportedOperationSystemException
-	 * 
-	 * @param src_code the src to clean
+	 *
+	 * @param src the src to clean
 	 * @return true if it worked, else false
 	 * @throws UnsupportedOperationSystemException
 	 */
-	public static boolean cleanBuild(File src_code) throws UnsupportedOperationSystemException {
-		String cmd = "cd " + src_code.getPath() + " && gradlew clean";
-		Runtime run = Runtime.getRuntime();
+	public static boolean cleanBuild(final File src) throws UnsupportedOperationSystemException {
+		final String cmd = "cd " + src.getPath() + " && gradlew clean";
+		final Runtime run = Runtime.getRuntime();
 
 		try {
 			Process process;
@@ -118,7 +117,7 @@ public class GradleBuild {
 				process = run.exec("cmd /c \"" + cmd + " && exit\"");
 				break;
 			case LINUX:
-				process = run.exec("./gradlew clean", null, src_code);
+				process = run.exec("./gradlew clean", null, src);
 				break;
 			default:
 				throw new UnsupportedOperationSystemException();
@@ -135,9 +134,9 @@ public class GradleBuild {
 			}
 			return true;
 
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			LOGGER.log(Level.ERROR, e.getMessage(), e);
-		} catch (InterruptedException e) {
+		} catch (final InterruptedException e) {
 			LOGGER.log(Level.ERROR, e.getMessage(), e);
 			Thread.currentThread().interrupt();
 		}

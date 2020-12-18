@@ -17,19 +17,19 @@ public class SpotBugsMetricsPerKLOCMetrics implements IMetricCalculator {
 	private Map<String, String> results;
 
 	@Override
-	public boolean calculateMetric(IJavaProject project, String productName, String vendorName, String version,
+	public boolean calculateMetric(final IJavaProject project, final String productName, final String vendorName, final String version,
 			final Map<String, String> map) {
-		results = new HashMap<>();
-		String llocKey = SourceMeterMetrics.MetricKeysImpl.LLOC.toString();
-		double lloc = Double.valueOf(map.get(llocKey));
+		this.results = new HashMap<>();
+		final String llocKey = SourceMeterMetrics.MetricKeysImpl.LLOC.toString();
+		final double lloc = Double.parseDouble(map.get(llocKey));
 
-		for (String klockKey : getMetricKeys()) {
-			String absKey = klockKey.substring(0, klockKey.indexOf("_KLOC"));
+		for (final String klockKey : getMetricKeys()) {
+			final String absKey = klockKey.substring(0, klockKey.indexOf("_KLOC"));
 			if (!map.containsKey(absKey)) {
 				return false;
 			}
-			double klockValue = Double.parseDouble(map.get(absKey)) * 1000 / lloc;
-			results.put(klockKey, String.valueOf(klockValue));
+			final double klockValue = (Double.parseDouble(map.get(absKey)) * 1000) / lloc;
+			this.results.put(klockKey, String.valueOf(klockValue));
 		}
 		return true;
 
@@ -37,7 +37,7 @@ public class SpotBugsMetricsPerKLOCMetrics implements IMetricCalculator {
 
 	@Override
 	public Map<String, String> getResults() {
-		return results;
+		return this.results;
 	}
 
 	@Override
@@ -47,7 +47,7 @@ public class SpotBugsMetricsPerKLOCMetrics implements IMetricCalculator {
 
 	@Override
 	public Set<Class<? extends IMetricCalculator>> getDependencies() {
-		Set<Class<? extends IMetricCalculator>> dependencies = new HashSet<Class<? extends IMetricCalculator>>();
+		final Set<Class<? extends IMetricCalculator>> dependencies = new HashSet<>();
 		dependencies.add(SpotBugsMetrics.class);
 		dependencies.add(SourceMeterMetrics.class);
 		return dependencies;
@@ -60,15 +60,15 @@ public class SpotBugsMetricsPerKLOCMetrics implements IMetricCalculator {
 		SECURITY_KLOC("SECURITY_KLOC"), STYLE_KLOC("STYLE_KLOC"), HIGH_PRIO_KLOC("HIGH_PRIO_KLOC"),
 		MEDIUM_PRIO_KLOC("MEDIUM_PRIO_KLOC"), LOW_PRIO_KLOC("LOW_PRIO_KLOC");
 
-		private String value;
+		private final String value;
 
-		private MetricKeysImpl(String value) {
+		MetricKeysImpl(final String value) {
 			this.value = value;
 		}
 
 		@Override
 		public String toString() {
-			return value;
+			return this.value;
 		}
 	}
 

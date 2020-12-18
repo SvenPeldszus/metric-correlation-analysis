@@ -21,27 +21,27 @@ import metric.correlation.analysis.MetricCalculation;
 public class ImportTest {
 	private static final String MAVEN_PROJECT_PATH = "resources/maven-simple";
 	private static final String GRADLE_PROJECT_PATH = "resources/gradle-simple";
-	
-	@Test@Ignore
+
+	@Test@Ignore(value = "Error has to be fixed in GRaViTY")
 	public void testGradleImport() throws ImportException, IOException {
-		File f = new File(GRADLE_PROJECT_PATH);
+		final File f = new File(GRADLE_PROJECT_PATH);
 		if (!f.exists()) {
 			fail("project does not exist at expected location");
 		}
-		IJavaProject importProject = new MetricCalculation().importProject(new File(GRADLE_PROJECT_PATH), false);
+		final IJavaProject importProject = new MetricCalculation().importProject(new File(GRADLE_PROJECT_PATH), false);
 		assertNotNull(importProject);
 	}
-	
+
 	@Test
 	public void testMavenImport() throws ImportException, IOException {
-		File f = new File(MAVEN_PROJECT_PATH);
+		final File f = new File(MAVEN_PROJECT_PATH);
 		if (!f.exists()) {
 			fail("project does not exist at expected location");
 		}
-		IJavaProject importProject = new MetricCalculation().importProject(new File(MAVEN_PROJECT_PATH), false);
+		final IJavaProject importProject = new MetricCalculation().importProject(new File(MAVEN_PROJECT_PATH), false);
 		assertNotNull(importProject);
 	}
-	
+
 	public static StringBuilder collectMessages(final Process process) throws IOException {
 		final StringBuilder message = new StringBuilder();
 		try (BufferedReader stream = new BufferedReader(new InputStreamReader(process.getInputStream()))) {

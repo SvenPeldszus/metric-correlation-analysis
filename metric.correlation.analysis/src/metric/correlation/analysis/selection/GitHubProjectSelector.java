@@ -96,16 +96,14 @@ public class GitHubProjectSelector {
 		int issueError = 0;
 		int totalCnt = 0;
 		int acceptError = 0;
-		try {
-			final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-
+		try (final CloseableHttpClient httpClient = HttpClientBuilder.create().build()){
 			// Requests per page x 100
 			for (int i = 1; i <= NUMBER_OF_PAGES; i++) {
 				if ((gitRequests++ % GIT_REQUESTS_PER_MINUTE) == 0) {
 					TimeUnit.MINUTES.sleep(1);
 				}
-				url = "https://api.github.com/search/repositories?q=language:java&sort=stars&order=desc"
-						+ "&page=" + i + "&per_page=" + RESULTS_PER_PAGE;
+				url = "https://api.github.com/search/repositories?q=language:java&sort=stars&order=desc" + "&page=" + i
+						+ "&per_page=" + RESULTS_PER_PAGE;
 
 				final HttpGet request = new HttpGet(url);
 				request.addHeader("content-type", "application/json");
@@ -125,7 +123,7 @@ public class GitHubProjectSelector {
 					final int stars = Integer.parseInt(jo.get("stargazers_count").toString());
 					final int openIssues = Integer.parseInt(jo.get("open_issues").toString());
 					final int size = Integer.parseInt(jo.get("size").toString());
-					if ((size < MAX_SIZE) || (size > (2*MAX_SIZE))) {
+					if ((size < MAX_SIZE) || (size > (2 * MAX_SIZE))) {
 						sizeError++;
 						continue;
 					}
@@ -146,8 +144,7 @@ public class GitHubProjectSelector {
 						final String vendor = owner.get("login").toString().replace("\"", "");
 
 						respositoryResults.add(new Repository(vendor, product, stars, openIssues));
-					}
-					else {
+					} else {
 						acceptError++;
 						LOGGER.error("NO MATCH " + fullName);
 					}
@@ -158,21 +155,18 @@ public class GitHubProjectSelector {
 				if ((matchedProjectCount >= maxProjects) || (jarray.size() == 0)) {
 					break;
 				}
-
-				// addDocumentsToElastic(respositoryResults);
-				// respositoryResults.clear();
 			}
-
-			httpClient.close();
-
-		} catch (final Exception e) {
-			LOGGER.log(Level.INFO, e.getStackTrace());
+		} catch (final InterruptedException e) {
+			LOGGER.error(e);
+			Thread.currentThread().interrupt();
+		} catch (final IOException e) {
+			LOGGER.error(e);
 		}
-		LOGGER.error("Total Count : " + totalCnt);
-		LOGGER.error("Disregarded for size: " + sizeError);
-		LOGGER.error("Disregarded for issues: " + issueError);
-		LOGGER.error("Disregarded for lack of mvn/ gradle: " + acceptError);
-		LOGGER.error("Matched projects: " + matchedProjectCount);
+		LOGGER.info("Total Count : " + totalCnt);
+		LOGGER.info("Disregarded for size: " + sizeError);
+		LOGGER.info("Disregarded for issues: " + issueError);
+		LOGGER.info("Disregarded for lack of mvn/ gradle: " + acceptError);
+		LOGGER.info("Matched projects: " + matchedProjectCount);
 		return respositoryResults;
 	}
 

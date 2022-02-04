@@ -6,9 +6,8 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="src" path="src/"/>
+	<classpathentry kind="src" path="execute/"/>
 	<classpathentry exported="true" kind="lib" path="flanagan.jar"/>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="execute"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/metric.correlation.analysis.dependencies"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

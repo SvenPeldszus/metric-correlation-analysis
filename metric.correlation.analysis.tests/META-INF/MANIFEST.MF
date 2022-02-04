@@ -9,7 +9,8 @@ Require-Bundle: metric.correlation.analysis,
  org.gravity.eclipse,
  org.eclipse.jdt.core,
  org.eclipse.jgit,
- metric.correlation.analysis.dependencies
+ metric.correlation.analysis.dependencies,
+ org.apache.log4j
 Automatic-Module-Name: metric.correlation.analysis.tests
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .

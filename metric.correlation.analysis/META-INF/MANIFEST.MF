@@ -22,7 +22,8 @@ Require-Bundle: metric.correlation.analysis.dependencies,
  org.junit,
  org.junit.jupiter.api,
  org.eclipse.jdt.launching,
- com.github.spotbugs.plugin.eclipse
+ com.github.spotbugs.plugin.eclipse,
+ org.apache.log4j
 Automatic-Module-Name: Metric-Correlation-Analysis
 Export-Package: metric.correlation.analysis,
  metric.correlation.analysis.calculation,

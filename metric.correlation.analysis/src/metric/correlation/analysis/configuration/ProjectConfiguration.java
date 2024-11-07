@@ -28,7 +28,7 @@ public class ProjectConfiguration {
 			final Map<String, String> versionGitCommitIdMapping) {
 		this.productName = productName;
 		this.vendorName = vendorName;
-		this.gitUrl = gitUrl;
+		this.gitUrl = gitUrl.replace("\"", "");
 		this.versionGitCommitIdMapping = versionGitCommitIdMapping;
 	}
 
@@ -97,5 +97,18 @@ public class ProjectConfiguration {
 	 */
 	public Set<Entry<String, String>> getVersionCommitIdPairs() {
 		return this.versionGitCommitIdMapping.entrySet();
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (obj instanceof final ProjectConfiguration other) {
+			return this.gitUrl.equals(other.gitUrl);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return this.gitUrl.hashCode();
 	}
 }

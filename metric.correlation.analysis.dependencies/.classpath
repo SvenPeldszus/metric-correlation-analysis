@@ -1,7 +1,97 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/activation.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/aggs-matrix-stats-client.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/animal-sniffer-annotations.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/btf.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/checker-qual.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/commons-codec.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/commons-io.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/commons-lang3.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/commons-logging.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/commons-math3.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/compiler.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/elasticsearch.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/elasticsearch-cli.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/elasticsearch-core.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/elasticsearch-rest-client.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/elasticsearch-rest-high-level-client.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/elasticsearch-secure-sm.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/elasticsearch-x-content.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/error_prone_annotations.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/gson.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/guava.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/HdrHistogram.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/hppc.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/httpasyncclient.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/httpclient.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/httpcore.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/httpcore-nio.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/j2objc-annotations.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/jackson-annotations.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/jackson-core.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/jackson-coreutils.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/jackson-databind.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/jackson-dataformat-cbor.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/jackson-dataformat-smile.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/jackson-dataformat-yaml.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/java-string-similarity.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/javax.mail-api.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/jcip-annotations.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/jcommon.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/jest.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/jest-common.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/jfreechart.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/jna.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/joda-time.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/jopt-simple.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/json-schema-core.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/json-schema-validator.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/jsr305.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/lang-mustache-client.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/libphonenumber.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/log4j2-elasticsearch-core.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/log4j2-elasticsearch-jest.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/log4j-api.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/log4j-core.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/lucene-analyzers-common.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/lucene-backward-codecs.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/lucene-core.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/lucene-grouping.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/lucene-highlighter.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/lucene-join.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/lucene-memory.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/lucene-misc.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/lucene-queries.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/lucene-queryparser.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/lucene-sandbox.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/lucene-spatial.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/lucene-spatial3d.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/lucene-spatial-extras.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/lucene-suggest.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/mailapi.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/mongo-java-driver.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/msg-simple.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/netty-buffer.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/netty-codec.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/netty-codec-http.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/netty-common.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/netty-handler.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/netty-resolver.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/netty-transport.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/opennlp-tools.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/parent-join-client.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/percolator-client.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/rank-eval-client.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/reindex-client.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/rhino.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/slf4j-api.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/snakeyaml.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/t-digest.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/transport.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/transport-netty4-client.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metric.correlation.analysis.dependencies-lib/uri-template.jar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/activation.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/aggs-matrix-stats-client.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/animal-sniffer-annotations.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/btf.jar"/>
@@ -12,13 +102,17 @@
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-math3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/compiler.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-cli.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-core.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-geo.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-lz4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-plugin-classloader.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-rest-client.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-rest-high-level-client.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-secure-sm.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-ssl-config.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-x-content.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/error_prone_annotations.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/gson.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/guava.jar"/>
@@ -26,8 +120,8 @@
 	<classpathentry exported="true" kind="lib" path="lib/hppc.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/httpasyncclient.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/httpclient.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/httpcore-nio.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/httpcore.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/httpcore-nio.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/j2objc-annotations.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jackson-annotations.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jackson-core.jar"/>
@@ -40,8 +134,8 @@
 	<classpathentry exported="true" kind="lib" path="lib/javax.mail-api.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jcip-annotations.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jcommon.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jest-common.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jest.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jest-common.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jfreechart.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jna.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/joda-time.jar"/>
@@ -51,10 +145,10 @@
 	<classpathentry exported="true" kind="lib" path="lib/jsr305.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lang-mustache-client.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/libphonenumber.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/log4j-api.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/log4j-core.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/log4j2-elasticsearch-core.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/log4j2-elasticsearch-jest.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/log4j-api.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/log4j-core.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-analyzers-common.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-backward-codecs.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-core.jar"/>
@@ -66,20 +160,23 @@
 	<classpathentry exported="true" kind="lib" path="lib/lucene-queries.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-queryparser.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-sandbox.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-spatial-extras.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-spatial.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-spatial3d.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-spatial-extras.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-suggest.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lz4-java.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/mailapi.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/mapper-extras-client.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/mongo-java-driver.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/msg-simple.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/netty-buffer.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/netty-codec-http.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/netty-codec.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/netty-codec-http.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/netty-common.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/netty-handler.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/netty-resolver.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/netty-transport.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/netty-transport-native-unix-common.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/opennlp-tools.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/parent-join-client.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/percolator-client.jar"/>
@@ -89,9 +186,10 @@
 	<classpathentry exported="true" kind="lib" path="lib/slf4j-api.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/snakeyaml.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/t-digest.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/transport-netty4-client.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/transport.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/transport-netty4-client.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/uri-template.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/activation.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

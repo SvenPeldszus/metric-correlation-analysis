@@ -11,19 +11,16 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.junit.Test;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -59,27 +56,27 @@ public class GithubIssueCrawler implements IssueCrawler {
 	@Override
 	public List<Issue> getIssues(final String vendor, final String product, final String version) throws IOException {
 		if (!this.lastProject.equals(product)) {
-			getReleases(vendor, product); // fetches release data
+			this.getReleases(vendor, product); // fetches release data
 		}
-		this.releaseDate = getReleaseDate(vendor, product, version);
+		this.releaseDate = this.getReleaseDate(vendor, product, version);
 		List<Issue> issues;
 		if (USE_DATABASE) {
-			issues = fetchIssuesFromDatabase(product);
+			issues = this.fetchIssuesFromDatabase(product);
 		} else {
-			issues = getIssuesAfterDate(vendor, product, this.releaseDate); // github api only has afterDate filter
+			issues = this.getIssuesAfterDate(vendor, product, this.releaseDate); // github api only has afterDate filter
 		}
-		this.nextReleaseDate = getNextReleaseDate(vendor, product, version); // today if latest release
+		this.nextReleaseDate = this.getNextReleaseDate(vendor, product, version); // today if latest release
 		LOGGER.info("release: " + this.releaseDate);
 		LOGGER.info("until: " + this.nextReleaseDate);
-		return filterIssues(issues);
+		return this.filterIssues(issues);
 	}
 
 	private List<Issue> fetchIssuesFromDatabase(final String product) {
 		final List<Issue> issues = new LinkedList<>();
-		try (MongoDBHelper mongo = new MongoDBHelper(MongoDBHelper.DEFAULT_DATABASE, product + "issues")) {
-			final List<Document> maps = mongo.getDocuments(new HashMap<>());
+		try (var mongo = new MongoDBHelper(MongoDBHelper.DEFAULT_DATABASE, product + "issues")) {
+			final var maps = mongo.getDocuments(new HashMap<>());
 			for (final Document doc : maps) {
-				final Issue issue = new Issue();
+				final var issue = new Issue();
 				issue.fromDocument(doc);
 				issues.add(issue);
 			}
@@ -95,11 +92,11 @@ public class GithubIssueCrawler implements IssueCrawler {
 		if (product.equals("jib")) {
 			return LocalDate.of(2020, 8, 7);
 		}
-		final int pos = this.releases.indexOf(version);
+		final var pos = this.releases.indexOf(version);
 		if (pos == (this.releases.size() - 1)) {
 			return LocalDate.now(); // we are at the latest release
 		}
-		return getReleaseDate(vendor, product, this.releases.get(pos + 1)); // date of next release
+		return this.getReleaseDate(vendor, product, this.releases.get(pos + 1)); // date of next release
 	}
 
 	@Override
@@ -111,27 +108,27 @@ public class GithubIssueCrawler implements IssueCrawler {
 			throws IOException {
 		final List<Issue> issues = new ArrayList<>();
 		final List<Map<String, Object>> tmpList = new ArrayList<>();
-		for (int i = 1; i < 150; i++) {
+		for (var i = 1; i < 150; i++) {
 			tmpList.clear();
 			LOGGER.info("at page " + i);
-			final String path = "https://api.github.com/repos/" + vendor + "/" + product + "/issues?since="
+			final var path = "https://api.github.com/repos/" + vendor + "/" + product + "/issues?since="
 					+ this.releaseDate.toString() + "&per_page=100&page=" + i + "&state=all";
-			final JsonArray jArray = getJsonFromURL(path).getAsJsonArray();
+			final var jArray = getJsonFromURL(path).getAsJsonArray();
 			if (jArray.size() == 0) {
 				break;
 			}
 			for (final JsonElement elem : jArray) {
-				final JsonObject issueJsonObject = (JsonObject) elem;
-				final JsonElement pr = issueJsonObject.get("pull_request");
+				final var issueJsonObject = (JsonObject) elem;
+				final var pr = issueJsonObject.get("pull_request");
 				if (pr == null) { // we don't want pull requests, which are also issues
-					final Issue issue = parseJsonIssue(issueJsonObject);
+					final var issue = this.parseJsonIssue(issueJsonObject);
 					issues.add(issue);
 					tmpList.add(issue.asMap());
 					LOGGER.info("finished issue " + issues.size());
 				}
 			}
 			if (STORE_ISSUES) {
-				try (MongoDBHelper db = new MongoDBHelper("metric_correlation", product + "-issues")) {
+				try (var db = new MongoDBHelper("metric_correlation", product + "-issues")) {
 					db.storeMany(tmpList);
 				}
 			}
@@ -141,28 +138,28 @@ public class GithubIssueCrawler implements IssueCrawler {
 	}
 
 	private Issue parseJsonIssue(final JsonObject issueJsonObject) throws IOException {
-		final Issue issue = new Issue();
+		final var issue = new Issue();
 		issue.setUrl(issueJsonObject.get("url").getAsJsonPrimitive().getAsString());
 		issue.setId(issueJsonObject.get("id").getAsJsonPrimitive().getAsString());
 		issue.setNumber(Integer.parseInt(issueJsonObject.get("number").getAsNumber().toString()));
-		issue.setCreationDate(parseDate(issueJsonObject.get("created_at").getAsJsonPrimitive().getAsString()));
+		issue.setCreationDate(this.parseDate(issueJsonObject.get("created_at").getAsJsonPrimitive().getAsString()));
 		if (issueJsonObject.get("state").getAsString().equals("closed")) {
 			issue.setClosed(true);
-			issue.setClosingDate(parseDate(issueJsonObject.get("closed_at").getAsJsonPrimitive().getAsString()));
+			issue.setClosingDate(this.parseDate(issueJsonObject.get("closed_at").getAsJsonPrimitive().getAsString()));
 		}
 		issue.setTitle(issueJsonObject.get("title").getAsJsonPrimitive().getAsString());
 		issue.setBody(issueJsonObject.get("body").getAsString());
 		for (final JsonElement elem : issueJsonObject.get("labels").getAsJsonArray()) {
-			final String labelName = elem.getAsJsonObject().get("name").getAsString().toLowerCase();
+			final var labelName = elem.getAsJsonObject().get("name").getAsString().toLowerCase();
 			issue.addLabel(labelName);
 		}
-		final String commentsUrl = issueJsonObject.get("comments_url").getAsJsonPrimitive().getAsString();
-		final JsonElement commentsElem = getJsonFromURL(commentsUrl);
+		final var commentsUrl = issueJsonObject.get("comments_url").getAsJsonPrimitive().getAsString();
+		final var commentsElem = getJsonFromURL(commentsUrl);
 		for (final JsonElement elem : commentsElem.getAsJsonArray()) {
-			final String comment = elem.getAsJsonObject().get("body").getAsJsonPrimitive().getAsString();
+			final var comment = elem.getAsJsonObject().get("body").getAsJsonPrimitive().getAsString();
 			issue.addComment(comment);
 		}
-		final IssueType type = getIssueType(issue);
+		final var type = this.getIssueType(issue);
 		if (type != null) {
 			issue.setType(type);
 		}
@@ -170,17 +167,17 @@ public class GithubIssueCrawler implements IssueCrawler {
 	}
 
 	private IssueType getIssueType(final Issue issue) {
-		boolean bug = false;
-		boolean sec = false;
-		boolean request = false;
+		var bug = false;
+		var sec = false;
+		var request = false;
 		for (final String labelName : issue.getLabels()) {
-			if (isBugLabel(labelName)) {
+			if (this.isBugLabel(labelName)) {
 				bug = true;
 			}
-			if (isSecurityLabel(labelName)) {
+			if (this.isSecurityLabel(labelName)) {
 				sec = true;
 			}
-			if (isRequestLabel(labelName)) {
+			if (this.isRequestLabel(labelName)) {
 				request = true;
 			}
 		}
@@ -219,7 +216,7 @@ public class GithubIssueCrawler implements IssueCrawler {
 	}
 
 	private LocalDate parseDate(final String dateStr) {
-		final DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.systemDefault()); // ISO_INSTANT
+		final var formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.systemDefault()); // ISO_INSTANT
 		return LocalDate.parse(dateStr, formatter);
 	}
 
@@ -231,22 +228,16 @@ public class GithubIssueCrawler implements IssueCrawler {
 	 * @throws IOException when request fails
 	 */
 	public static JsonElement getJsonFromURL(final String path) throws IOException {
-		if ((GitHubProjectSelector.gitRequests++ % GitHubProjectSelector.GIT_REQUESTS_PER_MINUTE) == 0) {
-			LOGGER.info("waiting for api");
-			try {
-				TimeUnit.SECONDS.sleep(5);
-			} catch (final InterruptedException e) {
-				Thread.currentThread().interrupt();
-				throw new IOException("Couldn't read due to interruption at waiting.", e);
-			}
-		}
 		JsonElement jelement = null;
-		try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
-			final HttpGet request = new HttpGet(path);
+		try (var httpClient = HttpClientBuilder.create().build()) {
+			final var request = new HttpGet(path);
 			request.addHeader("content-type", "application/json");
 			request.addHeader("Authorization", "Token " + GitHubProjectSelector.OAuthToken);
-			final HttpResponse result = httpClient.execute(request);
-			final String json = EntityUtils.toString(result.getEntity(), "UTF-8");
+			HttpResponse result = httpClient.execute(request);
+			while (GitHubProjectSelector.rateLimit(result)) {
+				result = httpClient.execute(request);
+			}
+			final var json = EntityUtils.toString(result.getEntity(), "UTF-8");
 			jelement = new JsonParser().parse(json);
 		}
 		return jelement;
@@ -255,15 +246,15 @@ public class GithubIssueCrawler implements IssueCrawler {
 	// returns the release date of the given version
 	private LocalDate getReleaseDate(final String vendor, final String product, final String version)
 			throws IOException {
-		final String commit = this.releaseCommits.get(version);
+		final var commit = this.releaseCommits.get(version);
 		if (commit == null) {
 			throw new IOException("Cannot read a commit for version " + version + '.');
 		}
-		final String url = "https://api.github.com/repos/" + vendor + "/" + product + "/commits/" + commit;
-		final JsonObject jobject = getJsonFromURL(url).getAsJsonObject();
-		final JsonObject commitObject = (JsonObject) jobject.get("commit");
-		final String dateStr = ((JsonObject) commitObject.get("author")).get("date").getAsJsonPrimitive().getAsString();
-		final LocalDate date = parseDate(dateStr);
+		final var url = "https://api.github.com/repos/" + vendor + "/" + product + "/commits/" + commit;
+		final var jobject = getJsonFromURL(url).getAsJsonObject();
+		final var commitObject = (JsonObject) jobject.get("commit");
+		final var dateStr = ((JsonObject) commitObject.get("author")).get("date").getAsJsonPrimitive().getAsString();
+		final var date = this.parseDate(dateStr);
 		if (date == null) {
 			throw new NullPointerException("Date could not be retrieved");
 		}
@@ -271,7 +262,7 @@ public class GithubIssueCrawler implements IssueCrawler {
 	}
 
 	private void getReleases(final String vendor, final String product) throws IOException {
-		boolean setOnlyCommits = false;
+		var setOnlyCommits = false;
 		if (this.versionList.containsKey(product)) {
 			this.releases = this.versionList.get(product); // use pre-defined release list
 			setOnlyCommits = true;
@@ -279,19 +270,19 @@ public class GithubIssueCrawler implements IssueCrawler {
 			this.releases = new ArrayList<>();
 		}
 		this.releaseCommits = new HashMap<>();
-		try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
-			final ProjectsOutputCreator poc = new ProjectsOutputCreator();
-			final JsonArray commits = poc.getReleaseCommits(httpClient, vendor, product, Integer.MAX_VALUE);
+		try (var httpClient = HttpClientBuilder.create().build()) {
+			final var poc = new ProjectsOutputCreator();
+			final var commits = poc.getReleaseCommits(httpClient, vendor, product, Integer.MAX_VALUE);
 			for (final JsonElement jo : commits) {
-				final String version = ((JsonObject) jo).get("version").getAsString();
-				final String commit = ((JsonObject) jo).get("commitId").getAsString();
+				final var version = ((JsonObject) jo).get("version").getAsString();
+				final var commit = ((JsonObject) jo).get("commitId").getAsString();
 				if (version.matches(".*\\d.*")) { // version needs a number for comparisons
 					this.releaseCommits.put(version, commit);
 				}
 			}
 			if (!setOnlyCommits) {
 				this.releaseCommits.keySet().forEach(key -> this.releases.add(key));
-				sortReleases();
+				this.sortReleases();
 			} else { // make sure every commit id is set
 				for (final String version : this.releases) {
 					if (!this.releaseCommits.containsKey(version)) {
@@ -314,24 +305,24 @@ public class GithubIssueCrawler implements IssueCrawler {
 	@Test
 	public void getLabelData() throws IOException {
 		final List<Map<String, Object>> tmpList = new ArrayList<>();
-		final int pages = 200;
-		final String label = "%3Eenhancement";
-		for (int i = 1; i < pages; i++) {
+		final var pages = 200;
+		final var label = "%3Eenhancement";
+		for (var i = 1; i < pages; i++) {
 			LOGGER.info("at page " + i);
 			tmpList.clear();
-			final String url = "https://api.github.com/search/issues?q=language:java+label:" + label
+			final var url = "https://api.github.com/search/issues?q=language:java+label:" + label
 					+ "+repo:elastic/elasticsearch+type:issue&per_page=100&page=" + i;
-			final JsonObject ob = getJsonFromURL(url).getAsJsonObject();
-			final JsonArray ar = ob.get("items").getAsJsonArray();
+			final var ob = getJsonFromURL(url).getAsJsonObject();
+			final var ar = ob.get("items").getAsJsonArray();
 			if (ar.size() == 0) {
 				break;
 			}
 			for (final JsonElement elem : ar) {
-				final JsonObject issueJsonObject = (JsonObject) elem;
-				final JsonElement pr = issueJsonObject.get("pull_request");
+				final var issueJsonObject = (JsonObject) elem;
+				final var pr = issueJsonObject.get("pull_request");
 				if (pr == null) { // we don't want pull requests, which are also issues
 					try {
-						final Issue issue = parseJsonIssue(issueJsonObject);
+						final var issue = this.parseJsonIssue(issueJsonObject);
 						tmpList.add(issue.asMap());
 					} catch (final Exception e) {
 						LOGGER.error(e.getMessage(), e);
@@ -339,7 +330,7 @@ public class GithubIssueCrawler implements IssueCrawler {
 
 				}
 			}
-			try (MongoDBHelper db = new MongoDBHelper("test", "issues")) {
+			try (var db = new MongoDBHelper("test", "issues")) {
 				db.storeMany(tmpList);
 			}
 		}

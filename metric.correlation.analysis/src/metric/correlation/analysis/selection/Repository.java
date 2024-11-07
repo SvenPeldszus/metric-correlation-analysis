@@ -7,6 +7,7 @@ package metric.correlation.analysis.selection;
 
 public class Repository {
 
+	private final String url;
 	private final String vendor;
 	private final String product;
 	private final int stars;
@@ -20,7 +21,9 @@ public class Repository {
 	 * @param stars      - the number of stars it has
 	 * @param openIssues - number of open issues
 	 */
-	public Repository(final String vendor, final String product, final int stars, final int openIssues) {
+	public Repository(final String url, final String vendor, final String product, final int stars,
+			final int openIssues) {
+		this.url = url;
 		this.vendor = vendor;
 		this.product = product;
 		this.stars = stars;
@@ -50,23 +53,24 @@ public class Repository {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (obj == null) {
-			return false;
-		}
-		if (!(obj instanceof Repository)) {
+		if ((obj == null) || !(obj instanceof Repository)) {
 			return false;
 		}
 		if (obj == this) {
 			return true;
 		}
-		return getVendor().equals(((Repository) obj).getVendor())
-				&& getProduct().equals(((Repository) obj).getProduct())
-				&& (getStars() == ((Repository) obj).getStars());
+		return this.getVendor().equals(((Repository) obj).getVendor())
+				&& this.getProduct().equals(((Repository) obj).getProduct())
+				&& (this.getStars() == ((Repository) obj).getStars());
 	}
 
 	@Override
 	public String toString() {
 		return this.vendor + " " + this.product + " " + this.stars;
+	}
+
+	public String getUrl() {
+		return url;
 	}
 
 }

@@ -8,14 +8,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.http.HttpHost;
 import org.eclipse.jdt.core.IJavaProject;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
 
 import metric.correlation.analysis.calculation.IMetricCalculator;
 import metric.correlation.analysis.calculation.MetricCalculatorInitializationException;
+import metric.correlation.analysis.database.ElasticSearchHelper;
 import metric.correlation.analysis.vulnerabilities.VulnerabilityDataQueryHandler;
 
 public class CVEMetrics implements IMetricCalculator {
@@ -24,20 +22,18 @@ public class CVEMetrics implements IMetricCalculator {
 
 	public CVEMetrics() throws MetricCalculatorInitializationException {
 		// Check if ES is running
-		try (RestHighLevelClient client = new RestHighLevelClient(
-				RestClient.builder(new HttpHost("localhost", 9200, "http")))) {
-
+		try (var client = ElasticSearchHelper.getElasticSearchClient()) {
 			client.info(RequestOptions.DEFAULT);
-
 		} catch (final IOException e) {
 			throw new MetricCalculatorInitializationException("ElasticSearch isn't running!");
 		}
 	}
 
 	@Override
-	public boolean calculateMetric(final IJavaProject project, final String productName, final String vendorName, final String version,
+	public boolean calculateMetric(final IJavaProject project, final String productName, final String vendorName,
+			final String version,
 			final Map<String, String> map) {
-		final VulnerabilityDataQueryHandler handler = new VulnerabilityDataQueryHandler();
+		final var handler = new VulnerabilityDataQueryHandler();
 		this.results = handler.getMetrics(handler.getVulnerabilities(productName, vendorName, version, "TWO"));
 		return !this.results.isEmpty();
 	}
@@ -70,7 +66,7 @@ public class CVEMetrics implements IMetricCalculator {
 		MAX_CVSS2("MaxCVSS2"),
 		NUMBER_OF_VULNERABILITIES("NumberOfVulnerabilities");
 
-		private String value;
+		private final String value;
 
 		MetricKeysImpl(final String value) {
 			this.value = value;

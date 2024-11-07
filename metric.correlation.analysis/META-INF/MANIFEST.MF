@@ -6,22 +6,13 @@ Bundle-Version: 0.0.1.qualifier
 Bundle-ClassPath: .,
  flanagan.jar
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: metric.correlation.analysis.dependencies,
- org.eclipse.jdt.core,
  org.junit;bundle-version="4.12.0",
  org.gravity.hulk,
- org.gravity.eclipse,
- org.gravity.hulk.antipatterngraph,
- org.eclipse.core.runtime,
- org.gravity.typegraph.basic,
- org.eclipse.core.resources,
  org.gravity.tgg.modisco.pm,
- org.eclipse.emf.ecore,
  org.eclipse.jgit,
  org.junit,
- org.junit.jupiter.api,
- org.eclipse.jdt.launching,
  com.github.spotbugs.plugin.eclipse,
  org.apache.log4j
 Automatic-Module-Name: Metric-Correlation-Analysis

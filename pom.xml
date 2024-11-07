@@ -16,7 +16,7 @@
 	</modules>
 
 	<properties>
-		<tycho-version>2.1.0</tycho-version>
+		<tycho-version>4.0.9</tycho-version>
 		<jacoco.version>0.8.6</jacoco.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>

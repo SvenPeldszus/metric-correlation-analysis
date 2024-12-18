@@ -1,10 +1,17 @@
 package metric.correlation.analysis.selection;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse.BodyHandlers;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+
+import metric.correlation.analysis.github.GitHubCrawler;
 
 public abstract class FileBasedGithubprojectSelector implements IGithubProjectSelector {
 
@@ -26,23 +33,22 @@ public abstract class FileBasedGithubprojectSelector implements IGithubProjectSe
 	@Override
 	public boolean accept(final String repositoryName, final String oAuthToken) {
 		String searchUrl;
-		try {
-			final var httpClient = HttpClientBuilder.create().build();
-
+		try (var httpClient = HttpClient.newHttpClient()){
+			
 			searchUrl = "https://github.com/" + repositoryName + "/blob/master/" + this.fileName;
-			final var request = new HttpGet(searchUrl);
-			request.addHeader("content-type", "application/json");
-			request.addHeader("Authorization", "Token " + GitHubProjectSelector.OAuthToken);
+			
+			final var request = HttpRequest.newBuilder().uri(URI.create(searchUrl))
+					.header("content-type", "application/json").header("Authorization", "Token " + GitHubCrawler.OAuthToken)
+					.build();
 
-			HttpResponse result = httpClient.execute(request);
+			var result = httpClient.send(request, BodyHandlers.ofString());
 			while (GitHubProjectSelector.rateLimit(result)) {
-				result = httpClient.execute(request);
+				result = httpClient.send(request, BodyHandlers.ofString());
 			}
 
-			if (result.getStatusLine().getStatusCode() != 404) {
+			if (result.statusCode() != 404) {
 				return true;
 			}
-			httpClient.close();
 		} catch (final Exception e) {
 			LOGGER.log(Level.ERROR, "Could not check if repository is a Gradle repository.");
 			LOGGER.log(Level.INFO, e.getStackTrace());

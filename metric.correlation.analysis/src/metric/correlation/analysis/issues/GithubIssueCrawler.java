@@ -1,6 +1,10 @@
 package metric.correlation.analysis.issues;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -12,11 +16,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.junit.Test;
@@ -26,6 +25,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import metric.correlation.analysis.database.MongoDBHelper;
+import metric.correlation.analysis.github.GitHubCrawler;
 import metric.correlation.analysis.io.VersionHelper;
 import metric.correlation.analysis.issues.Issue.IssueType;
 import metric.correlation.analysis.selection.GitHubProjectSelector;
@@ -226,19 +226,21 @@ public class GithubIssueCrawler implements IssueCrawler {
 	 * @param path path for the request
 	 * @return json response for the request
 	 * @throws IOException when request fails
+	 * @throws InterruptedException 
 	 */
 	public static JsonElement getJsonFromURL(final String path) throws IOException {
 		JsonElement jelement = null;
-		try (var httpClient = HttpClientBuilder.create().build()) {
-			final var request = new HttpGet(path);
-			request.addHeader("content-type", "application/json");
-			request.addHeader("Authorization", "Token " + GitHubProjectSelector.OAuthToken);
-			HttpResponse result = httpClient.execute(request);
+		try(var httpClient = HttpClient.newHttpClient()){
+			var request = HttpRequest.newBuilder().uri(URI.create(path)).header("content-type", "application/json")
+					.header("Authorization", "Token " + GitHubCrawler.OAuthToken).build();
+			var result = httpClient.send(request, BodyHandlers.ofString());
 			while (GitHubProjectSelector.rateLimit(result)) {
-				result = httpClient.execute(request);
+				result = httpClient.send(request, BodyHandlers.ofString());
 			}
-			final var json = EntityUtils.toString(result.getEntity(), "UTF-8");
-			jelement = new JsonParser().parse(json);
+			jelement = new JsonParser().parse(result.body());
+		}
+		catch(InterruptedException e) {
+			throw new IOException(e);
 		}
 		return jelement;
 	}
@@ -270,7 +272,7 @@ public class GithubIssueCrawler implements IssueCrawler {
 			this.releases = new ArrayList<>();
 		}
 		this.releaseCommits = new HashMap<>();
-		try (var httpClient = HttpClientBuilder.create().build()) {
+		try(var httpClient = HttpClient.newHttpClient()) {
 			final var poc = new ProjectsOutputCreator();
 			final var commits = poc.getReleaseCommits(httpClient, vendor, product, Integer.MAX_VALUE);
 			for (final JsonElement jo : commits) {
@@ -290,6 +292,8 @@ public class GithubIssueCrawler implements IssueCrawler {
 					}
 				}
 			}
+		} catch (InterruptedException e) {
+			throw new IOException(e);
 		}
 	}
 
@@ -303,7 +307,7 @@ public class GithubIssueCrawler implements IssueCrawler {
 	// This was used to get issues with a specific label for the classification
 	// training
 	@Test
-	public void getLabelData() throws IOException {
+	public void getLabelData() throws IOException, InterruptedException {
 		final List<Map<String, Object>> tmpList = new ArrayList<>();
 		final var pages = 200;
 		final var label = "%3Eenhancement";

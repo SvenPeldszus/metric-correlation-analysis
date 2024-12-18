@@ -3,6 +3,10 @@ package metric.correlation.analysis.selection;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -23,6 +27,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
+
+import metric.correlation.analysis.github.GitHubCrawler;
 
 public class ProjectsOutputCreator {
 
@@ -73,8 +79,7 @@ public class ProjectsOutputCreator {
 		final var resultArray = new JsonArray();
 		resultJSON.add(PROJECTS, resultArray);
 
-		try (var httpClient = HttpClientBuilder.create().build()) {
-
+		var httpClient = HttpClient.newHttpClient();{
 			// Iterate the vulnerable projects
 			for (final SearchHit repository : repositoriesWithCVEs) {
 				final var projectJSON = new JsonObject();
@@ -103,39 +108,36 @@ public class ProjectsOutputCreator {
 			try (var fileWriter = new FileWriter(PROJECTS_DATA_OUTPUT_FILE)) {
 				fileWriter.write(resultJSON.toString());
 			}
-		} catch (final Exception e) {
-			LOGGER.log(Level.ERROR, e.getMessage(), e);
-		}
+		} 
 
 	}
 
-	public JsonArray getReleaseCommits(final CloseableHttpClient httpClient, final String vendorName,
-			final String productName) throws IOException {
+	public JsonArray getReleaseCommits(final HttpClient httpClient, final String vendorName,
+			final String productName) throws IOException, InterruptedException {
 		return this.getReleaseCommits(httpClient, vendorName, productName, MAX_COMMITS);
 	}
 
-	public JsonArray getReleaseCommits(final CloseableHttpClient httpClient, final String vendorName,
-			final String productName, final Integer commitLimit) throws IOException {
+	public JsonArray getReleaseCommits(final HttpClient httpClient, final String vendorName,
+			final String productName, final Integer commitLimit) throws IOException, InterruptedException {
 		final var commits = new JsonArray();
 		// Iterate over the project release pages
 		for (var i = 1; i < 100; i++) {
 			final var gitURL = "https://api.github.com/repos/" + vendorName + "/" + productName + "/tags?page=" + i
 					+ "&per_page=100";
 
-			final var request = new HttpGet(gitURL);
-			request.addHeader("Authorization", "Token " + GitHubProjectSelector.OAuthToken);
-			request.addHeader("content-type", "application/json");
+			final var request = HttpRequest.newBuilder().uri(URI.create(gitURL))
+					.header("content-type", "application/json").header("Authorization", "Token " + GitHubCrawler.OAuthToken)
+					.build();
 
-			HttpResponse result = httpClient.execute(request);
+			var result = httpClient.send(request, BodyHandlers.ofString());
 			while (GitHubProjectSelector.rateLimit(result)) {
-				result = httpClient.execute(request);
+				result = httpClient.send(request, BodyHandlers.ofString());
 			}
 
-			if (result.getStatusLine().getStatusCode() != 200) {
-				throw new IOException(result.getStatusLine().toString());
+			if (result.statusCode() != 200) {
+				throw new IOException("HTTP/"+result.statusCode());
 			}
-			final var json = EntityUtils.toString(result.getEntity(), "UTF-8");
-			final var jsonObject = new JsonParser().parse(json);
+			final var jsonObject = new JsonParser().parse(result.body());
 			if (jsonObject.isJsonObject()) {
 				throw new IOException(((JsonObject) jsonObject).get("message").toString());
 			}
@@ -207,7 +209,7 @@ public class ProjectsOutputCreator {
 		projectJSON.addProperty(PRODUCT_NAME, rep.getProduct());
 		projectJSON.addProperty(VENDOR_NAME, rep.getVendor());
 		projectJSON.addProperty(URL, URL);
-		final var httpClient = HttpClientBuilder.create().build();
+		var httpClient = HttpClient.newHttpClient();
 		JsonArray commits;
 		try {
 			commits = this.getReleaseCommits(httpClient, rep.getVendor(), rep.getProduct());

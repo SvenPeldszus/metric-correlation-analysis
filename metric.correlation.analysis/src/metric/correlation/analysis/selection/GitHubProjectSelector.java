@@ -3,6 +3,11 @@ package metric.correlation.analysis.selection;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Files;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -12,11 +17,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
@@ -36,6 +36,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import metric.correlation.analysis.database.ElasticSearchHelper;
+import metric.correlation.analysis.github.GitHubCrawler;
 import metric.correlation.analysis.vulnerabilities.VulnerabilityDataQueryHandler;
 
 /**
@@ -73,14 +74,11 @@ public class GitHubProjectSelector implements Closeable {
 
 	private final RestHighLevelClient elasticClient;
 
-	// Change this to your own OAuthToken
-	public static final String OAuthToken = System.getenv("GITHUB_OAUTH");
-
 	public static GitHubProjectSelector INSTANCE;
 
 	public final static String repositoryDatabaseName = "repositories_database_extended";
 
-	public static void main(final String[] args) throws IOException {
+	public static void main(final String[] args) throws IOException, InterruptedException {
 		final var consoleAppender = new ConsoleAppender();
 		final var PATTERN = "%d - %m%n";
 		consoleAppender.setLayout(new PatternLayout(PATTERN));
@@ -103,8 +101,10 @@ public class GitHubProjectSelector implements Closeable {
 	 *
 	 * @return a HashSet of {@link Repository} results, which are Java and Gradle
 	 *         projects.
+	 * @throws InterruptedException 
+	 * @throws IOException 
 	 */
-	public void initializeProjectElasticDatabase(final int maxProjects) {
+	public void initializeProjectElasticDatabase(final int maxProjects) throws InterruptedException, IOException {
 		var matchedProjectCount = 0;
 		var totalCnt = 0;
 
@@ -123,7 +123,7 @@ public class GitHubProjectSelector implements Closeable {
 		}
 		var month = 01;
 
-		try (final var httpClient = HttpClientBuilder.create().build()) {
+		var httpClient = HttpClient.newHttpClient(); {
 			// Requests per page x 100
 			var i = 1;
 			var respositoryResults = new HashSet<Repository>();
@@ -169,7 +169,7 @@ public class GitHubProjectSelector implements Closeable {
 					}
 					var accept = false;
 					for (final IGithubProjectSelector b : BUILD_NATURE_SELECTORS) {
-						accept |= b.accept(fullName, OAuthToken);
+						accept |= b.accept(fullName, GitHubCrawler.OAuthToken);
 					}
 					if (accept) {
 						matchedProjectCount++;
@@ -194,8 +194,6 @@ public class GitHubProjectSelector implements Closeable {
 				}
 				i++;
 			}
-		} catch (final IOException e) {
-			LOGGER.error(e);
 		}
 		LOGGER.info("Total Count : " + totalCnt);
 		LOGGER.info("Disregarded for issues: " + issueError);
@@ -203,8 +201,8 @@ public class GitHubProjectSelector implements Closeable {
 		LOGGER.info("Matched projects: " + matchedProjectCount);
 	}
 
-	private JsonObject getPage(final CloseableHttpClient httpClient, final int page, final int year, final int month)
-			throws IOException, ClientProtocolException {
+	private JsonObject getPage(final HttpClient httpClient, final int page, final int year, final int month)
+			throws IOException, InterruptedException {
 		final var url = "https://api.github.com/search/repositories?q=language%3Ajava"
 				+ "+created%3A" + year + "-" + String.format("%02d", month)
 				+ "+size%3A%3E" + MIN_SIZE
@@ -212,9 +210,9 @@ public class GitHubProjectSelector implements Closeable {
 				+ "&page=" + page
 				+ "&per_page=" + RESULTS_PER_PAGE;
 		System.out.println("GET " + url);
-		final var request = new HttpGet(url);
-		request.addHeader("content-type", "application/json");
-		request.addHeader("Authorization", "Token " + OAuthToken);
+		final var request = HttpRequest.newBuilder().uri(URI.create(url))
+				.header("content-type", "application/json").header("Authorization", "Token " + GitHubCrawler.OAuthToken)
+				.build();
 
 		try {
 			Thread.sleep(50);
@@ -222,20 +220,19 @@ public class GitHubProjectSelector implements Closeable {
 			LOGGER.error(e);
 			Thread.currentThread().interrupt();
 		}
-		HttpResponse result = httpClient.execute(request);
+		var result = httpClient.send(request, BodyHandlers.ofString());
 		while (GitHubProjectSelector.rateLimit(result)) {
 			System.out.println("retry");
-			result = httpClient.execute(request);
+			result = httpClient.send(request, BodyHandlers.ofString());
 		}
 
-		final var string = EntityUtils.toString(result.getEntity(), "UTF-8");
-		return new JsonParser().parse(string).getAsJsonObject();
+		return new JsonParser().parse(result.body()).getAsJsonObject();
 	}
 
-	public static boolean rateLimit(final HttpResponse result) {
-		if (result.getStatusLine().getStatusCode() == 403) {
+	public static boolean rateLimit(final java.net.http.HttpResponse result) {
+		if (result.statusCode() == 403) {
 			final var xRatelimitReset = Instant
-					.ofEpochSecond(Long.parseLong(result.getFirstHeader("x-ratelimit-reset").getValue()))
+					.ofEpochSecond(Long.parseLong(result.headers().firstValue("x-ratelimit-reset").get()))
 					.toEpochMilli();
 			final var now = Instant.now().toEpochMilli();
 			var sleep = xRatelimitReset - now + 1000;

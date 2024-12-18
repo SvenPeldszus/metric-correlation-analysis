@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: AI-based Classifiers
+Bundle-SymbolicName: metric.correlation.analysis.ai
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: metric.correlation.analysis.dependencies
+Automatic-Module-Name: metric.correlation.analysis.ai
+Bundle-RequiredExecutionEnvironment: JavaSE-21

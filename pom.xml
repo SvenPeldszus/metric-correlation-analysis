@@ -10,6 +10,7 @@
 
 	<modules>
 		<module>metric.correlation.analysis</module>
+		<module>metric.correlation.analysis.ai</module>
 		<module>metric.correlation.analysis.coverage</module>
 		<module>metric.correlation.analysis.dependencies</module>
 		<module>metric.correlation.analysis.tests</module>

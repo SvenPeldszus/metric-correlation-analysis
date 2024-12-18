@@ -6,7 +6,7 @@ Bundle-Version: 0.0.1.qualifier
 Bundle-ClassPath: .,
  flanagan.jar
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Require-Bundle: metric.correlation.analysis.dependencies,
  org.junit;bundle-version="4.12.0",
  org.gravity.hulk,
@@ -20,7 +20,9 @@ Export-Package: metric.correlation.analysis,
  metric.correlation.analysis.calculation,
  metric.correlation.analysis.calculation.impl,
  metric.correlation.analysis.database,
+ metric.correlation.analysis.github,
  metric.correlation.analysis.io,
- metric.correlation.analysis.issues
+ metric.correlation.analysis.issues,
+ metric.correlation.analysis.selection
 Bundle-Vendor: RGSE - University of Koblenz-Landau
 Bundle-Activator: metric.correlation.analysis.Activator

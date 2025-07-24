@@ -1,0 +1,6 @@
+training_folder = './metric.correlation.analysis.ai/classify/train/'
+manual_folder = './metric.correlation.analysis.ai/classify/manual/'
+feat_req_security_folder = './metric.correlation.analysis.ai/issues/security_enhancement/'
+feat_req_pot_security_folder = './metric.correlation.analysis.ai/issues/potential_security_enhancement/'
+feat_req_folder = './metric.correlation.analysis.ai/issues/enhancement/'
+model_path = './metric.correlation.analysis.ai/src/main/resources/model.keras'

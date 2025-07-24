@@ -59,10 +59,10 @@
 			<url>https://gravity-tool.github.io/beta-updatesite</url>
 		</repository>
 		<repository>
-                        <id>SpotBugs</id>
-                        <layout>p2</layout>
-                        <url>https://spotbugs.github.io/eclipse/</url>
-                </repository>
+			<id>SpotBugs</id>
+            <layout>p2</layout>
+            <url>https://spotbugs.github.io/eclipse-latest/</url>
+        </repository>
 		<!-- Maven Repos -->
 		<repository>
 			<id>OSGeo</id>

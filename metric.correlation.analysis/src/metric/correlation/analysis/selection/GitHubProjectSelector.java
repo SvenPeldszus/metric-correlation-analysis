@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Files;
 import java.time.Instant;
@@ -17,7 +16,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.http.util.EntityUtils;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -101,10 +99,10 @@ public class GitHubProjectSelector implements Closeable {
 	 *
 	 * @return a HashSet of {@link Repository} results, which are Java and Gradle
 	 *         projects.
-	 * @throws InterruptedException 
-	 * @throws IOException 
+	 * @throws InterruptedException
+	 * @throws IOException
 	 */
-	public void initializeProjectElasticDatabase(final int maxProjects) throws InterruptedException, IOException {
+	public void initializeProjectElasticDatabase(final int maxProjects) throws IOException {
 		var matchedProjectCount = 0;
 		var totalCnt = 0;
 
@@ -123,7 +121,8 @@ public class GitHubProjectSelector implements Closeable {
 		}
 		var month = 01;
 
-		var httpClient = HttpClient.newHttpClient(); {
+		final var httpClient = HttpClient.newHttpClient();
+		{
 			// Requests per page x 100
 			var i = 1;
 			var respositoryResults = new HashSet<Repository>();
@@ -202,7 +201,7 @@ public class GitHubProjectSelector implements Closeable {
 	}
 
 	private JsonObject getPage(final HttpClient httpClient, final int page, final int year, final int month)
-			throws IOException, InterruptedException {
+			throws IOException {
 		final var url = "https://api.github.com/search/repositories?q=language%3Ajava"
 				+ "+created%3A" + year + "-" + String.format("%02d", month)
 				+ "+size%3A%3E" + MIN_SIZE
@@ -220,13 +219,16 @@ public class GitHubProjectSelector implements Closeable {
 			LOGGER.error(e);
 			Thread.currentThread().interrupt();
 		}
-		var result = httpClient.send(request, BodyHandlers.ofString());
-		while (GitHubProjectSelector.rateLimit(result)) {
-			System.out.println("retry");
-			result = httpClient.send(request, BodyHandlers.ofString());
+		try {
+			var result = httpClient.send(request, BodyHandlers.ofString());
+			while (GitHubProjectSelector.rateLimit(result)) {
+				System.out.println("retry");
+				result = httpClient.send(request, BodyHandlers.ofString());
+			}
+			return new JsonParser().parse(result.body()).getAsJsonObject();
+		} catch (final InterruptedException e) {
+			throw new IOException(e);
 		}
-
-		return new JsonParser().parse(result.body()).getAsJsonObject();
 	}
 
 	public static boolean rateLimit(final java.net.http.HttpResponse result) {

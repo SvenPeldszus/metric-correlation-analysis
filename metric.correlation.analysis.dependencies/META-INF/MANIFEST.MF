@@ -5,7 +5,7 @@ Bundle-SymbolicName: metric.correlation.analysis.dependencies;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: RGSE - University of Koblenz-Landau
 Automatic-Module-Name: metric.correlation.analysis.dependencies
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ClassPath: .,
  lib/metric.correlation.analysis.dependencies-lib/activation.jar.jar,
  lib/metric.correlation.analysis.dependencies-lib/aggs-matrix-stats-client.jar.jar,

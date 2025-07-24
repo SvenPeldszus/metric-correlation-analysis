@@ -20,6 +20,7 @@ import metric.correlation.analysis.ai.data.Issue;
 
 public class GitHubIssueCrawler {
 
+	private static final String STATUS_FILE = ".year";
 	private static final int RESULTS_PER_PAGE = 100;
 	public static final String OAuthToken = System.getenv("GITHUB_OAUTH");
 
@@ -27,15 +28,24 @@ public class GitHubIssueCrawler {
 
 		final var securityFeatureRequests = searchIssuesWithLabel(new String[] { "security", "enhancement" },
 				new String[] {}, -1);
+		resetStartYear();
 		final var featureRequests = searchIssuesWithLabel(new String[] { "enhancement" }, new String[] { "security" },
-				securityFeatureRequests);
+				-1);
 		System.out.println("security: " + securityFeatureRequests + ", other: " + featureRequests);
+	}
+
+	private static void resetStartYear() {
+		final var status = new File(STATUS_FILE);
+		if (status.exists()) {
+			status.delete();
+		}
 	}
 
 	private static int searchIssuesWithLabel(final String[] searchLabels, final String[] excludeLabels,
 			final int maxIssues)
 			throws IOException {
-		final var targetFolder = new File(new File("issues"), String.join("_", searchLabels));
+		final var endpoint = "issues";
+		final var targetFolder = new File(new File(endpoint), String.join("_", searchLabels));
 		targetFolder.mkdirs();
 
 		try (var httpClient = HttpClient.newHttpClient();) {
@@ -43,22 +53,12 @@ public class GitHubIssueCrawler {
 			var page = 1;
 
 			final var today = Calendar.getInstance();
-			final var status = new File(".year");
+			final var status = new File(STATUS_FILE);
 			var year = getStartYear(status);
 			var month = 01;
 
 			while (true) {
-				var url = "https://api.github.com/search/issues?q=";
-				for (final var label : searchLabels) {
-					url += "label:" + label + "+";
-				}
-				url += "created:" + year + "-" + String.format("%02d", month)
-						+ "&page=" + page
-						+ "&per_page=" + RESULTS_PER_PAGE;
-				System.out.print("GET " + url);
-				final var request = HttpRequest.newBuilder().uri(URI.create(url))
-						.header("content-type", "application/json").header("Authorization", "Token " + OAuthToken)
-						.build();
+				final var request = buildSearchRequest(endpoint, page, searchLabels, year, month);
 
 				HttpResponse<String> result;
 				try {
@@ -128,13 +128,41 @@ public class GitHubIssueCrawler {
 						writer.write(json);
 					}
 					issues++;
-					if (issues >= maxIssues) {
+					if (maxIssues > 0 && issues >= maxIssues) {
 						return issues;
 					}
 				}
 				page++;
 			}
 		}
+	}
+
+	private static HttpRequest buildSearchRequest(final String endpoint, final int page, final String[] labels,
+			final int year,
+			final int month) {
+		var url = "https://api.github.com/search/"
+				+ endpoint
+				+ "?q=";
+		url = limitToLabels(url, labels);
+		url = limitToDate(year, month, url);
+		url += "&page=" + page
+				+ "&per_page=" + RESULTS_PER_PAGE;
+		System.out.print("GET " + url);
+		return HttpRequest.newBuilder().uri(URI.create(url))
+				.header("content-type", "application/json").header("Authorization", "Token " + OAuthToken)
+				.build();
+	}
+
+	private static String limitToDate(final int year, final int month, String url) {
+		url += "created:" + year + "-" + String.format("%02d", month);
+		return url;
+	}
+
+	private static String limitToLabels(String url, final String[] searchLabels) {
+		for (final var label : searchLabels) {
+			url += "label:" + label + "+";
+		}
+		return url;
 	}
 
 	private static int getStartYear(final File status) {

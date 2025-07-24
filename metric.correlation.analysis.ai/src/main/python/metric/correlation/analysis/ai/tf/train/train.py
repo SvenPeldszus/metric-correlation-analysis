@@ -19,8 +19,10 @@ from tensorflow.keras import losses
 
 SHOW_STATISTICS = False
 
+
 def custom_standardization(input_data):
     return tf.strings.lower(input_data)
+
 
 def vectorize_text(text, label):
     text = tf.expand_dims(text, -1)
@@ -140,21 +142,44 @@ metrics = export_model.evaluate(raw_test_ds, return_dict=True)
 print(metrics)
 
 print(raw_train_ds.class_names)
+export_model.save(paths.model_path)
 
-security = 0
-for file in os.listdir(paths.training_folder+'other/'):
-    with open(paths.training_folder+'other/'+file) as stream:
-        value = stream.read()
-        prediction = export_model(tf.constant([value]))
-        print('Prediction for '+file)
-        print(prediction[0])
-        p = prediction[0][0].numpy()
-        print(p)
-        if p>=.5:
-            label=1
-            security += 1
-            print('Labeled security: '+file)
+for file in os.listdir(paths.feat_req_pot_security_folder):
+    security = paths.manual_folder + 'security'
+    other = paths.manual_folder + 'other'
+    os.makedirs(security, exist_ok=True)
+    os.makedirs(other, exist_ok=True)
+
+    with open(paths.feat_req_pot_security_folder + file) as f:
+        json_content = json.load(f)
+        value = json_content.get('title')+'\n\n'+json_content.get('description')
+        print(value)
+
+    prediction = export_model(tf.constant([value]))
+
+    predicted_label = tf.argmax(prediction, axis=1).numpy()[0]
+
+    print('Prediction for '+file)
+    print(prediction)
+    print(predicted_label)
+    p = prediction[0][0].numpy()
+    print(p)
+    if p >= .5:
+        label = 1
+        print('Labeled security: '+file)
+    else:
+        label = 0
+    print(label)
+
+    while True:
+        decision = input("Is this a security request? (y/n), abort (q): ")
+        if decision.lower() == 'y':
+            shutil.move(paths.feat_req_pot_security_folder+file, security+'/'+file) 
+            break
+        elif decision.lower() == 'n':
+            shutil.move(paths.feat_req_pot_security_folder+file, other+'/'+file)
+            break
+        elif decision.lower() == 'q':   
+            exit(0)
         else:
-            label=0
-        print(label)
-print("Security requests in other: "+str(security))
+            print("Invalid input, please enter 'y', 'n', or 'q'.")

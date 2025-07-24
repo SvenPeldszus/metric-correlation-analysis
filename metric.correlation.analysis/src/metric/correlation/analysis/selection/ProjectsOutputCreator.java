@@ -10,11 +10,6 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.elasticsearch.search.SearchHit;
@@ -79,7 +74,7 @@ public class ProjectsOutputCreator {
 		final var resultArray = new JsonArray();
 		resultJSON.add(PROJECTS, resultArray);
 
-		var httpClient = HttpClient.newHttpClient();{
+		try (var httpClient = HttpClient.newHttpClient();) {
 			// Iterate the vulnerable projects
 			for (final SearchHit repository : repositoriesWithCVEs) {
 				final var projectJSON = new JsonObject();
@@ -108,8 +103,9 @@ public class ProjectsOutputCreator {
 			try (var fileWriter = new FileWriter(PROJECTS_DATA_OUTPUT_FILE)) {
 				fileWriter.write(resultJSON.toString());
 			}
-		} 
-
+		} catch (IOException | InterruptedException e) {
+			LOGGER.error(e);
+		}
 	}
 
 	public JsonArray getReleaseCommits(final HttpClient httpClient, final String vendorName,
@@ -126,7 +122,8 @@ public class ProjectsOutputCreator {
 					+ "&per_page=100";
 
 			final var request = HttpRequest.newBuilder().uri(URI.create(gitURL))
-					.header("content-type", "application/json").header("Authorization", "Token " + GitHubCrawler.OAuthToken)
+					.header("content-type", "application/json")
+					.header("Authorization", "Token " + GitHubCrawler.OAuthToken)
 					.build();
 
 			var result = httpClient.send(request, BodyHandlers.ofString());
@@ -135,7 +132,7 @@ public class ProjectsOutputCreator {
 			}
 
 			if (result.statusCode() != 200) {
-				throw new IOException("HTTP/"+result.statusCode());
+				throw new IOException("HTTP/" + result.statusCode());
 			}
 			final var jsonObject = new JsonParser().parse(result.body());
 			if (jsonObject.isJsonObject()) {
@@ -209,7 +206,7 @@ public class ProjectsOutputCreator {
 		projectJSON.addProperty(PRODUCT_NAME, rep.getProduct());
 		projectJSON.addProperty(VENDOR_NAME, rep.getVendor());
 		projectJSON.addProperty(URL, URL);
-		var httpClient = HttpClient.newHttpClient();
+		final var httpClient = HttpClient.newHttpClient();
 		JsonArray commits;
 		try {
 			commits = this.getReleaseCommits(httpClient, rep.getVendor(), rep.getProduct());

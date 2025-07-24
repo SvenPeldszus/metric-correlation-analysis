@@ -7,16 +7,16 @@ import re
 import shutil
 import string
 
-import main.python.metic.correlation.analysis.ai.tf.train.paths as paths
+import paths as paths
 
-os.makedirs(paths.ng_folder, exist_ok=True)
+os.makedirs(paths.training_folder, exist_ok=True)
 
-print('list: '+os.path.abspath(paths.security_feat_req_folder))
+print('list: '+os.path.abspath(paths.feat_req_security_folder))
 
-for file in os.listdir(paths.security_feat_req_folder):
+for file in os.listdir(paths.feat_req_security_folder):
     folder = paths.training_folder + 'security/'
     os.makedirs(folder, exist_ok=True)
-    with open(paths.security_feat_req_folder + file) as f:
+    with open(paths.feat_req_security_folder + file) as f:
         json_content = json.load(f)
         with open(folder+json_content.get('id')+'.txt', 'w') as txt:
             text = json_content.get('title')+'\n\n'+json_content.get('description')
